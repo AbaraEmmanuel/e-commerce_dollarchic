@@ -139,7 +139,7 @@ class ScentsManager {
                     <div class="product-category">${product.family || 'Fine Fragrance'}</div>
                     <h3 class="product-name">${product.name}</h3>
                     <div class="product-notes">${product.notes || ''}</div>
-                    <p class="product-price">$${product.price.toFixed(2)}</p>
+                    <p class="product-price">₦${product.price.toFixed(2)}</p>
                 </div>
             </div>
         `).join('');
