@@ -1,0 +1,157 @@
+/* Scents Page Specific Styles */
+
+.loading-spinner {
+    text-align: center;
+    padding: 4rem;
+}
+
+.spinner-ring {
+    width: 50px;
+    height: 50px;
+    border: 3px solid var(--dollarchic-gold-light);
+    border-top-color: var(--dollarchic-gold);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.product-notes {
+    font-size: 0.7rem;
+    color: var(--dollarchic-gold);
+    margin: 0.25rem 0;
+    font-style: italic;
+}
+
+.product-material {
+    font-size: 0.7rem;
+    color: var(--dollarchic-gold);
+    margin: 0.25rem 0;
+}
+
+.notes-guide {
+    padding: 4rem 0;
+    background: var(--dollarchic-ivory);
+}
+
+.notes-guide-content {
+    text-align: center;
+}
+
+.notes-guide-content h3 {
+    font-family: var(--font-serif);
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    color: var(--dollarchic-emerald);
+}
+
+.notes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.note-card {
+    padding: 1.5rem;
+    background: white;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+.note-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-deep);
+}
+
+.note-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.note-card h4 {
+    margin-bottom: 0.5rem;
+    color: var(--dollarchic-emerald);
+}
+
+.note-card p {
+    font-size: 0.8rem;
+    color: var(--dollarchic-charcoal);
+}
+
+.craftsmanship-story {
+    padding: 5rem 0;
+    background: var(--dollarchic-cream);
+}
+
+.story-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+.story-badge {
+    display: inline-block;
+    padding: 0.25rem 1rem;
+    background: var(--dollarchic-gold-light);
+    color: var(--dollarchic-emerald);
+    border-radius: 50px;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+}
+
+.story-content h2 {
+    font-family: var(--font-serif);
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--dollarchic-emerald);
+}
+
+.story-features {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.story-feature {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.story-feature i {
+    width: 30px;
+    color: var(--dollarchic-gold);
+    font-size: 1.2rem;
+}
+
+.story-image img {
+    width: 100%;
+    border-radius: 20px;
+    box-shadow: var(--shadow-deep);
+}
+
+.no-products {
+    text-align: center;
+    padding: 4rem;
+}
+
+.no-products i {
+    font-size: 4rem;
+    color: var(--dollarchic-gold-light);
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .notes-grid,
+    .story-grid {
+        grid-template-columns: 1fr;
+    }
+}

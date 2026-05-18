@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artisanal Bags | Dollarchic's Store</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Josefin+Sans:wght@100;200;300;400;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <style>
+        /* Additional bags page specific styles */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            position: relative;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 32px 48px -20px rgba(0,0,0,0.25);
+        }
+        
+        .product-image {
+            position: relative;
+            aspect-ratio: 1;
+            overflow: hidden;
+            background: linear-gradient(135deg, #f5f0e8 0%, #e8e0d5 100%);
+        }
+        
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        
+        .product-card:hover .product-image img {
+            transform: scale(1.08);
+        }
+        
+        .product-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .product-card:hover .product-overlay {
+            opacity: 1;
+        }
+        
+        .quick-add-btn {
+            background: var(--gold-pure);
+            color: var(--obs-deep);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 40px;
+            font-family: var(--font-sans);
+            font-size: 0.7rem;
+            font-weight: 400;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            transform: translateY(20px);
+            opacity: 0;
+        }
+        
+        .product-card:hover .quick-add-btn {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .quick-add-btn:hover {
+            background: var(--gold-bright);
+            transform: translateY(-2px);
+        }
+        
+        .product-info {
+            padding: 1.25rem;
+            text-align: center;
+        }
+        
+        .product-name {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--obs-mid);
+            margin-bottom: 0.35rem;
+            letter-spacing: -0.01em;
+        }
+        
+        .product-price {
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            font-weight: 300;
+            color: var(--gold-molten);
+            letter-spacing: 0.08em;
+        }
+        
+        /* Product material tag */
+        .product-material {
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+            color: var(--ash);
+            margin-top: 0.25rem;
+            text-transform: uppercase;
+        }
+        
+        /* Auth indicator styles */
+        .auth-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-right: 0.5rem;
+        }
+        
+        .verified-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(42, 138, 92, 0.15);
+            padding: 0.4rem 0.8rem;
+            border-radius: 40px;
+            border: 1px solid rgba(42, 138, 92, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .verified-badge:hover {
+            background: rgba(42, 138, 92, 0.25);
+            transform: translateY(-1px);
+        }
+        
+        .verified-badge i {
+            color: #2a8a5c;
+            font-size: 0.8rem;
+        }
+        
+        .verified-badge span {
+            font-family: var(--font-sans);
+            font-size: 0.65rem;
+            font-weight: 400;
+            color: #2a8a5c;
+            letter-spacing: 0.05em;
+        }
+        
+        .logout-btn {
+            background: none;
+            border: 1px solid rgba(212,168,48,0.3);
+            color: rgba(248,244,237,0.7);
+            padding: 0.4rem 0.8rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: var(--font-sans);
+        }
+        
+        .logout-btn:hover {
+            border-color: rgba(212,168,48,0.8);
+            color: var(--gold-3);
+            transform: translateY(-1px);
+        }
+        
+        .login-btn {
+            background: var(--gold-molten);
+            border: none;
+            color: var(--obs-deep);
+            padding: 0.4rem 1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 0.65rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: var(--font-sans);
+        }
+        
+        .login-btn:hover {
+            background: var(--gold-pure);
+            transform: translateY(-1px);
+        }
+        
+        /* Loading state */
+        .loading-state {
+            text-align: center;
+            padding: 4rem;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 2px solid rgba(210, 170, 50, 0.2);
+            border-top-color: var(--gold-pure);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem;
+            color: var(--ash);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--alabaster-fog);
+            margin-bottom: 1rem;
+        }
+        
+        /* Product badge */
+        .product-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--gold-molten);
+            color: var(--obs-deep);
+            padding: 0.25rem 0.75rem;
+            border-radius: 30px;
+            font-size: 0.6rem;
+            font-weight: 400;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            z-index: 2;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .auth-indicator {
+                gap: 0.3rem;
+            }
+            .verified-badge span {
+                display: none;
+            }
+            .verified-badge {
+                padding: 0.4rem;
+            }
+            .logout-btn span {
+                display: none;
+            }
+            .logout-btn {
+                padding: 0.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Celestial Background -->
+    <div class="animated-bg">
+        <div class="gold-dust-particle"></div><div class="gold-dust-particle"></div><div class="gold-dust-particle"></div>
+        <div class="gold-dust-particle"></div><div class="gold-dust-particle"></div><div class="gold-dust-particle"></div>
+        <div class="gold-dust-particle"></div><div class="gold-dust-particle"></div>
+        <div class="sparkle"></div><div class="sparkle"></div><div class="sparkle"></div><div class="sparkle"></div><div class="sparkle"></div>
+        <div class="sparkle"></div><div class="sparkle"></div><div class="sparkle"></div><div class="sparkle"></div><div class="sparkle"></div>
+        <div class="sparkle"></div><div class="sparkle"></div><div class="sparkle"></div><div class="sparkle"></div><div class="sparkle"></div>
+        <div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div>
+        <div class="light-ray"></div><div class="light-ray"></div><div class="light-ray"></div>
+    </div>
+
+    <!-- Custom Cursor -->
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <!-- Loader -->
+    <div class="loader" id="loader">
+        <div class="loader-content">
+            <div class="loader-ring"></div>
+            <div class="loader-text"><span>D</span><span>O</span><span>L</span><span>L</span><span>A</span><span>R</span><span>C</span><span>H</span><span>I</span><span>C</span></div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html"><span class="logo-icon">✦</span> DOLLARCHIC<span class="logo-sub">STORE</span></a>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="scents.html" class="nav-link">Scents</a>
+                <a href="bags.html" class="nav-link active">Bags</a>
+                <a href="about.html" class="nav-link">Maison</a>
+            </div>
+            <div class="nav-icons">
+                <button class="icon-btn search-toggle" onclick="alert('Search coming soon!');"><i class="fas fa-search"></i></button>
+                
+                <!-- Auth Indicator Container -->
+                <div class="auth-indicator" id="authIndicator">
+                    <!-- Will be populated dynamically -->
+                </div>
+                
+                <button class="icon-btn cart-btn" id="cartBtn"><i class="fas fa-shopping-bag"></i><span class="cart-count" id="cartCount">0</span></button>
+                <button class="icon-btn menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header bags-header">
+        <div class="page-header-bg"></div>
+        <div class="page-header-content">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="index.html">Home</a>
+                    <i class="fas fa-chevron-right"></i>
+                    <span>Artisanal Bags</span>
+                </div>
+                <h1 class="fade-up">The<br><span class="text-gradient">Leather Atelier</span></h1>
+                <p class="fade-up delay-1">Handcrafted leather goods from master artisans</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <div class="container">
+            <div class="filter-wrapper">
+                <div class="filter-group">
+                    <button class="filter-btn active" data-category="all">All Bags</button>
+                    <button class="filter-btn" data-category="tote">Tote Bags</button>
+                    <button class="filter-btn" data-category="crossbody">Crossbody</button>
+                    <button class="filter-btn" data-category="clutch">Clutches</button>
+                    <button class="filter-btn" data-category="backpack">Backpacks</button>
+                    <button class="filter-btn" data-category="shoulder">Shoulder Bags</button>
+                </div>
+                <select class="sort-select" id="sortSelect">
+                    <option value="featured">Featured</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                    <option value="name-asc">Name: A to Z</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Section -->
+    <section class="products-section">
+        <div class="container">
+            <div class="products-grid" id="bagsGrid">
+                <!-- Products will be loaded here -->
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>Curating artisanal bags...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="footer-logo"><span class="logo-icon">✦</span> DOLLARCHIC</div>
+                    <p>Luxury scents and bags for the discerning connoisseur.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-pinterest"></i></a>
+                        <a href="#"><i class="fab fa-tiktok"></i></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="scents.html">Fine Fragrances</a></li>
+                        <li><a href="bags.html">Artisanal Bags</a></li>
+                        <li><a href="#">Gift Sets</a></li>
+                        <li><a href="#">Limited Editions</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">Concierge Service</a></li>
+                        <li><a href="#">Shipping & Returns</a></li>
+                        <li><a href="#">Authenticity Guarantee</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Maison</h4>
+                    <ul>
+                        <li><a href="#">Our Story</a></li>
+                        <li><a href="#">Sustainability</a></li>
+                        <li><a href="#">Press</a></li>
+                        <li><a href="#">Careers</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Dollarchic's Store. All rights reserved.</p>
+                <div class="payment-icons">
+                    <i class="fab fa-cc-visa"></i>
+                    <i class="fab fa-cc-mastercard"></i>
+                    <i class="fab fa-cc-amex"></i>
+                    <i class="fab fa-cc-paypal"></i>
+                    <i class="fab fa-cc-apple-pay"></i>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3><i class="fas fa-shopping-bag"></i> Your Bag</h3>
+            <button class="close-cart" id="closeCart"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <div class="empty-cart">
+                <i class="fas fa-shopping-bag"></i>
+                <p>Your bag is empty</p>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-subtotal">
+                <span>Subtotal</span>
+                <span id="cartTotal">$0.00</span>
+            </div>
+            <button class="btn-primary full-width" onclick="alert('Checkout coming soon!'); return false;">Checkout</button>
+        </div>
+    </div>
+    <div class="cart-overlay" id="cartOverlay"></div>
+
+    <script>
+        // ============================================
+        // BAGS PRODUCT DATA
+        // ============================================
+        
+        const bagsProducts = [
+            { 
+                id: 101, 
+                name: 'The Heritage Tote', 
+                price: 890, 
+                image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600',
+                category: 'tote',
+                material: 'Full-grain Italian Leather',
+                badge: 'Bestseller'
+            },
+            { 
+                id: 102, 
+                name: 'Sienna Crossbody', 
+                price: 450, 
+                image: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600',
+                category: 'crossbody',
+                material: 'Pebbled Leather',
+                badge: null
+            },
+            { 
+                id: 103, 
+                name: 'Evening Clutch', 
+                price: 320, 
+                image: 'https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=600',
+                category: 'clutch',
+                material: 'Satin & Crystal',
+                badge: 'Limited'
+            },
+            { 
+                id: 104, 
+                name: 'Nomad Backpack', 
+                price: 650, 
+                image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600',
+                category: 'backpack',
+                material: 'Waxed Canvas & Leather',
+                badge: null
+            },
+            { 
+                id: 105, 
+                name: 'The Weekender', 
+                price: 1200, 
+                image: 'https://images.unsplash.com/photo-1547941126-3d5322b218b0?w=600',
+                category: 'tote',
+                material: 'Full-grain Leather',
+                badge: 'Exclusive'
+            },
+            { 
+                id: 106, 
+                name: 'Belt Bag', 
+                price: 280, 
+                image: 'https://images.unsplash.com/photo-1591561954557-26941169b49e?w=600',
+                category: 'crossbody',
+                material: 'Nappa Leather',
+                badge: null
+            },
+            { 
+                id: 107, 
+                name: 'Pearl Clutch', 
+                price: 380, 
+                image: 'https://images.unsplash.com/photo-1589755971391-c6b9d8b8f3e8?w=600',
+                category: 'clutch',
+                material: 'Pearl Embellished',
+                badge: 'New'
+            },
+            { 
+                id: 108, 
+                name: 'Urban Backpack', 
+                price: 520, 
+                image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600',
+                category: 'backpack',
+                material: 'Sustainable Nylon',
+                badge: null
+            },
+            { 
+                id: 109, 
+                name: 'Shoulder Crescent', 
+                price: 580, 
+                image: 'https://images.unsplash.com/photo-1594223274512-ad4803739b7c?w=600',
+                category: 'shoulder',
+                material: 'Smooth Calfskin',
+                badge: null
+            },
+            { 
+                id: 110, 
+                name: 'Mini Tote', 
+                price: 390, 
+                image: 'https://images.unsplash.com/photo-1591561954555-26941169b49e?w=600',
+                category: 'tote',
+                material: 'Vegan Leather',
+                badge: 'Eco'
+            },
+            { 
+                id: 111, 
+                name: 'Chain Strap Bag', 
+                price: 720, 
+                image: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600',
+                category: 'shoulder',
+                material: 'Metallic Leather',
+                badge: null
+            },
+            { 
+                id: 112, 
+                name: 'Vintage Satchel', 
+                price: 850, 
+                image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600',
+                category: 'shoulder',
+                material: 'Distressed Leather',
+                badge: 'Heritage'
+            }
+        ];
+        
+        // ============================================
+        // AUTHENTICATION STATE
+        // ============================================
+        
+        let currentUser = null;
+        let isAuthenticated = false;
+        
+        // Update auth UI based on login state
+        function updateAuthUI() {
+            const authContainer = document.getElementById('authIndicator');
+            if (!authContainer) return;
+            
+            if (isAuthenticated && currentUser) {
+                // User is logged in - show verified badge and logout button
+                const firstName = currentUser.user?.user_metadata?.first_name || 
+                                 currentUser.user?.email?.split('@')[0] || 
+                                 'Member';
+                
+                authContainer.innerHTML = `
+                    <div class="verified-badge" id="userMenuBtn">
+                        <i class="fas fa-check-circle"></i>
+                        <span>${firstName}</span>
+                    </div>
+                    <button class="logout-btn" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Exit</span>
+                    </button>
+                `;
+                
+                // Add logout handler
+                const logoutBtn = document.getElementById('logoutBtn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', handleLogout);
+                }
+            } else {
+                // User is not logged in - show login button
+                authContainer.innerHTML = `
+                    <button class="login-btn" id="loginBtn">
+                        <i class="fas fa-user"></i>
+                        <span>Sign In</span>
+                    </button>
+                `;
+                
+                const loginBtn = document.getElementById('loginBtn');
+                if (loginBtn) {
+                    loginBtn.addEventListener('click', () => {
+                        window.location.href = 'login.html';
+                    });
+                }
+            }
+        }
+        
+        // Handle logout
+        async function handleLogout() {
+            if (typeof window.dollarchicAuth !== 'undefined') {
+                const result = await window.dollarchicAuth.signOut();
+                if (result.success) {
+                    isAuthenticated = false;
+                    currentUser = null;
+                    updateAuthUI();
+                    showNotification('You have been signed out');
+                    
+                    // Redirect to home after 1 second
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                }
+            }
+        }
+        
+        // Check authentication status
+        async function checkAuthStatus() {
+            if (typeof window.dollarchicAuth !== 'undefined') {
+                const result = await window.dollarchicAuth.getCurrentUser();
+                if (result.success && result.isAuthenticated) {
+                    isAuthenticated = true;
+                    currentUser = result.user;
+                } else {
+                    isAuthenticated = false;
+                    currentUser = null;
+                }
+                updateAuthUI();
+            }
+        }
+        
+        // ============================================
+        // CART SYSTEM
+        // ============================================
+        
+        let cart = [];
+        
+        function loadCart() {
+            const saved = localStorage.getItem('dollarchic_cart');
+            if (saved) cart = JSON.parse(saved);
+            updateCartUI();
+        }
+        
+        function saveCart() {
+            localStorage.setItem('dollarchic_cart', JSON.stringify(cart));
+            updateCartUI();
+        }
+        
+        function addToCart(product) {
+            const existing = cart.find(item => item.id === product.id);
+            if (existing) {
+                existing.quantity += 1;
+            } else {
+                cart.push({ ...product, quantity: 1 });
+            }
+            saveCart();
+            showNotification(`${product.name} added to bag`);
+            animateCartIcon();
+        }
+        
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            saveCart();
+        }
+        
+        function updateQuantity(productId, change) {
+            const item = cart.find(item => item.id === productId);
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) {
+                    removeFromCart(productId);
+                } else {
+                    saveCart();
+                }
+            }
+        }
+        
+        function getCartTotal() {
+            return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        }
+        
+        function getCartCount() {
+            return cart.reduce((sum, item) => sum + item.quantity, 0);
+        }
+        
+        function updateCartUI() {
+            const cartCountEl = document.getElementById('cartCount');
+            if (cartCountEl) cartCountEl.textContent = getCartCount();
+            
+            const cartItemsEl = document.getElementById('cartItems');
+            const cartTotalEl = document.getElementById('cartTotal');
+            
+            if (cartItemsEl && cartTotalEl) {
+                if (cart.length === 0) {
+                    cartItemsEl.innerHTML = '<div class="empty-cart"><i class="fas fa-shopping-bag"></i><p>Your bag is empty</p></div>';
+                } else {
+                    cartItemsEl.innerHTML = cart.map(item => `
+                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #eee;">
+                            <img src="${item.image}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 12px;">
+                            <div style="flex: 1;">
+                                <h4 style="margin-bottom: 0.25rem;">${item.name}</h4>
+                                <p style="color: var(--gold-pure); font-weight: 600;">$${item.price}</p>
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                                    <button onclick="updateQuantity(${item.id}, -1)" style="width: 28px; height: 28px; border: 1px solid #ddd; background: white; border-radius: 8px; cursor: pointer;">-</button>
+                                    <span>${item.quantity}</span>
+                                    <button onclick="updateQuantity(${item.id}, 1)" style="width: 28px; height: 28px; border: 1px solid #ddd; background: white; border-radius: 8px; cursor: pointer;">+</button>
+                                    <button onclick="removeFromCart(${item.id})" style="margin-left: auto; background: none; border: none; color: #999; cursor: pointer;"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                cartTotalEl.textContent = `$${getCartTotal().toFixed(2)}`;
+            }
+        }
+        
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification-toast';
+            notification.innerHTML = `<i class="fas fa-check-circle"></i><span>${message}</span>`;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.classList.add('show'), 10);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+        
+        function animateCartIcon() {
+            const icon = document.querySelector('.cart-btn');
+            if (icon) {
+                icon.style.transform = 'scale(1.1)';
+                setTimeout(() => icon.style.transform = '', 200);
+            }
+        }
+        
+        // ============================================
+        // RENDER PRODUCTS
+        // ============================================
+        
+        let currentCategory = 'all';
+        let currentSort = 'featured';
+        
+        function renderProducts() {
+            const container = document.getElementById('bagsGrid');
+            if (!container) return;
+            
+            // Filter products
+            let filtered = [...bagsProducts];
+            if (currentCategory !== 'all') {
+                filtered = filtered.filter(p => p.category === currentCategory);
+            }
+            
+            // Sort products
+            if (currentSort === 'price-asc') {
+                filtered.sort((a, b) => a.price - b.price);
+            } else if (currentSort === 'price-desc') {
+                filtered.sort((a, b) => b.price - a.price);
+            } else if (currentSort === 'name-asc') {
+                filtered.sort((a, b) => a.name.localeCompare(b.name));
+            }
+            
+            // Show empty state if no products
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-shopping-bag"></i>
+                        <h3>No bags found</h3>
+                        <p>Try adjusting your filters</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Render product cards — image, name, price
+            container.innerHTML = filtered.map(product => `
+                <div class="product-card" data-id="${product.id}">
+                    <div class="product-image">
+                        <img src="${product.image}" alt="${product.name}" loading="lazy">
+                        ${product.badge ? `<span class="product-badge">${product.badge}</span>` : ''}
+                        <div class="product-overlay">
+                            <button class="quick-add-btn" onclick="event.stopPropagation(); addToCart(bagsProducts.find(p => p.id === ${product.id}))">
+                                <i class="fas fa-shopping-bag"></i> Add to Bag
+                            </button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">${product.name}</h3>
+                        <p class="product-price">$${product.price.toFixed(2)}</p>
+                        ${product.material ? `<p class="product-material">${product.material}</p>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // ============================================
+        // FILTER AND SORT FUNCTIONALITY
+        // ============================================
+        
+        function initFilters() {
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const sortSelect = document.getElementById('sortSelect');
+            
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentCategory = btn.dataset.category;
+                    renderProducts();
+                });
+            });
+            
+            if (sortSelect) {
+                sortSelect.addEventListener('change', (e) => {
+                    currentSort = e.target.value;
+                    renderProducts();
+                });
+            }
+        }
+        
+        // ============================================
+        // NAVIGATION & UI INITIALIZATION
+        // ============================================
+        
+        function initNavScroll() {
+            const navbar = document.getElementById('navbar');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) navbar.classList.add('scrolled');
+                else navbar.classList.remove('scrolled');
+            });
+        }
+        
+        function initCartSidebar() {
+            const cartBtn = document.getElementById('cartBtn');
+            const cartSidebar = document.getElementById('cartSidebar');
+            const cartOverlay = document.getElementById('cartOverlay');
+            const closeCart = document.getElementById('closeCart');
+            
+            const openCart = () => {
+                cartSidebar.classList.add('open');
+                cartOverlay.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            };
+            
+            const closeCartFn = () => {
+                cartSidebar.classList.remove('open');
+                cartOverlay.classList.remove('open');
+                document.body.style.overflow = '';
+            };
+            
+            if (cartBtn) cartBtn.addEventListener('click', openCart);
+            if (closeCart) closeCart.addEventListener('click', closeCartFn);
+            if (cartOverlay) cartOverlay.addEventListener('click', closeCartFn);
+        }
+        
+        function initMobileMenu() {
+            const menuToggle = document.getElementById('menuToggle');
+            const navMenu = document.getElementById('navMenu');
+            if (menuToggle) {
+                menuToggle.addEventListener('click', () => navMenu.classList.toggle('open'));
+            }
+        }
+        
+        function initLoader() {
+            const loader = document.getElementById('loader');
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    loader.classList.add('hide');
+                    setTimeout(() => loader.style.display = 'none', 600);
+                }, 800);
+            });
+        }
+        
+        function initCustomCursor() {
+            const cursorDot = document.querySelector('.cursor-dot');
+            const cursorOutline = document.querySelector('.cursor-outline');
+            if (!cursorDot || !cursorOutline) return;
+            
+            document.addEventListener('mousemove', (e) => {
+                cursorDot.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+                cursorOutline.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+            });
+            
+            const hoverElements = document.querySelectorAll('a, button, .product-card, .icon-btn');
+            hoverElements.forEach(el => {
+                el.addEventListener('mouseenter', () => cursorOutline.classList.add('hovering'));
+                el.addEventListener('mouseleave', () => cursorOutline.classList.remove('hovering'));
+            });
+        }
+        
+        // Make functions global for cart
+        window.addToCart = addToCart;
+        window.removeFromCart = removeFromCart;
+        window.updateQuantity = updateQuantity;
+        window.bagsProducts = bagsProducts;
+        
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', async () => {
+            renderProducts();
+            loadCart();
+            initNavScroll();
+            initCartSidebar();
+            initMobileMenu();
+            initLoader();
+            initCustomCursor();
+            initFilters();
+            await checkAuthStatus();
+        });
+    </script>
+</body>
+</html>

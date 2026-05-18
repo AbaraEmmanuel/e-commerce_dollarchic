@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign Up | DOLLARCHIC — Maison de Luxe</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,300;0,6..96,400;0,6..96,500;1,6..96,300;1,6..96,400&family=Cinzel:wght@300;400;500&family=DM+Sans:wght@200;300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+
+<style>
+/* Same styling as before - keeping it concise */
+:root {
+  --void: #020406;
+  --abyss: #050a0d;
+  --deep: #080f14;
+  --gold-2: #d4a830;
+  --gold-3: #f0c842;
+  --bone: #f8f4ed;
+  --success: #2a8a5c;
+  --error: #c44a2c;
+  --serif: 'Bodoni Moda', serif;
+  --display: 'Cinzel', serif;
+  --sans: 'DM Sans', sans-serif;
+  --ease-silk: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: var(--sans);
+  font-weight: 300;
+  background: var(--void);
+  color: var(--bone);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#ambient-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.6; }
+
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 1000; padding: 1.5rem 0;
+  background: rgba(2,4,6,0.7);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(212,168,48,0.1);
+}
+.nav-inner {
+  max-width: 1500px; margin: 0 auto;
+  padding: 0 4rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo {
+  font-family: var(--display);
+  font-size: 1.2rem; letter-spacing: 0.3em;
+  color: var(--bone);
+  text-decoration: none;
+}
+.nav-logo::before { content: '✦'; color: var(--gold-3); margin-right: 0.5rem; }
+.nav-back {
+  display: flex; align-items: center; gap: 0.75rem;
+  color: rgba(248,244,237,0.5);
+  text-decoration: none;
+  font-size: 0.65rem;
+  transition: color 0.3s, gap 0.3s;
+}
+.nav-back:hover { color: var(--gold-3); gap: 1rem; }
+
+.auth-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 8rem 2rem 4rem;
+  position: relative;
+  z-index: 1;
+}
+.auth-card {
+  max-width: 520px;
+  width: 100%;
+  background: rgba(8, 9, 14, 0.65);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(212,168,48,0.15);
+  padding: 3rem 2.5rem;
+  position: relative;
+}
+.auth-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(105deg, #6b4a0f 0%, #d4a830 25%, #f9e090 50%, #d4a830 75%, #6b4a0f 100%);
+  animation: barShimmer 3s ease infinite;
+}
+@keyframes barShimmer { 0%,100% { background-position: 0% 0; } 50% { background-position: 100% 0; } }
+
+.auth-header { text-align: center; margin-bottom: 2.5rem; }
+.auth-icon {
+  width: 70px; height: 70px;
+  margin: 0 auto 1.5rem;
+  border: 1px solid rgba(212,168,48,0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.auth-icon i { font-size: 2rem; color: var(--gold-2); }
+.auth-header h1 { font-family: var(--serif); font-size: 2rem; font-weight: 300; margin-bottom: 0.5rem; }
+.auth-header p { font-size: 0.75rem; color: rgba(248,244,237,0.4); }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-group { margin-bottom: 1.5rem; }
+.form-group label {
+  display: block;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(212,168,48,0.6);
+  margin-bottom: 0.6rem;
+}
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.input-wrapper i {
+  position: absolute;
+  left: 1rem;
+  color: rgba(212,168,48,0.3);
+  z-index: 1;
+}
+.input-wrapper input {
+  width: 100%;
+  padding: 1rem 3rem 1rem 2.8rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(212,168,48,0.15);
+  color: var(--bone);
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+  outline: none;
+}
+.input-wrapper input:focus { border-color: rgba(212,168,48,0.5); background: rgba(255,255,255,0.06); }
+
+.password-toggle {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: rgba(212,168,48,0.5);
+  cursor: pointer;
+  font-size: 1rem;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.password-toggle:hover { color: var(--gold-3); background: rgba(212,168,48,0.1); }
+
+.password-strength { margin-top: 0.5rem; height: 3px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; }
+.strength-bar { width: 0%; height: 100%; transition: width 0.3s ease; border-radius: 3px; }
+.strength-text { display: block; font-size: 0.55rem; margin-top: 0.5rem; color: rgba(248,244,237,0.3); }
+
+.terms { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 2rem; }
+.terms input { margin-top: 0.2rem; accent-color: var(--gold-2); cursor: pointer; }
+.terms label { font-size: 0.7rem; color: rgba(248,244,237,0.5); cursor: pointer; }
+.terms a { color: var(--gold-2); text-decoration: none; }
+
+.btn-gold {
+  width: 100%; padding: 1rem;
+  background: var(--gold-2); border: none; color: var(--void);
+  font-family: var(--display); font-size: 0.7rem; letter-spacing: 0.25em;
+  text-transform: uppercase; cursor: pointer; position: relative; overflow: hidden;
+  transition: all 0.4s var(--ease-silk);
+}
+.btn-gold::before {
+  content: ''; position: absolute; top: 0; left: -100%; width: 80%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.6s var(--ease-silk);
+}
+.btn-gold:hover { background: var(--gold-3); transform: translateY(-2px); }
+.btn-gold:hover::before { left: 150%; }
+.btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.auth-divider { display: flex; align-items: center; gap: 1rem; margin: 2rem 0; color: rgba(248,244,237,0.2); font-size: 0.6rem; }
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(212,168,48,0.2), transparent); }
+
+.social-login { display: flex; gap: 1rem; justify-content: center; }
+.social-btn {
+  flex: 1; padding: 0.8rem; background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(212,168,48,0.15); color: rgba(248,244,237,0.6);
+  cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center;
+  justify-content: center; gap: 0.5rem;
+}
+.social-btn:hover { border-color: rgba(212,168,48,0.4); background: rgba(212,168,48,0.05); color: var(--gold-3); transform: translateY(-2px); }
+
+.login-link { text-align: center; margin-top: 2rem; font-size: 0.7rem; color: rgba(248,244,237,0.4); }
+.login-link a { color: var(--gold-2); text-decoration: none; }
+
+.message {
+  background: rgba(196, 74, 44, 0.1);
+  border-left: 3px solid var(--error);
+  padding: 0.8rem 1rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.7rem;
+  color: #e88a6a;
+  display: none;
+}
+.message.show { display: block; }
+.message.success { border-left-color: var(--success); background: rgba(42, 138, 92, 0.1); color: #6ad4a0; }
+
+.auth-footer { text-align: center; padding: 2rem; font-size: 0.5rem; letter-spacing: 0.2em; color: rgba(248,244,237,0.15); position: relative; z-index: 1; }
+
+@media (max-width: 768px) {
+  .nav-inner { padding: 0 2rem; }
+  .auth-card { padding: 2rem 1.5rem; }
+  .form-row { grid-template-columns: 1fr; gap: 0; }
+  .social-login { flex-direction: column; }
+}
+@media (max-width: 480px) {
+  .auth-card { padding: 1.8rem 1.2rem; }
+  .nav-inner { padding: 0 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="ambient-canvas"></canvas>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">DOLLARCHIC</a>
+    <a href="index.html" class="nav-back"><i class="fas fa-arrow-left"></i> Back to Store</a>
+  </div>
+</nav>
+
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-icon"><i class="fas fa-user-plus"></i></div>
+      <h1>Join the Circle</h1>
+      <p>Create an account to access exclusive benefits</p>
+    </div>
+
+    <div class="message" id="message"></div>
+
+    <form id="signup-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label>First Name</label>
+          <div class="input-wrapper">
+            <i class="fas fa-user"></i>
+            <input type="text" id="firstName" placeholder="John" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Last Name</label>
+          <div class="input-wrapper">
+            <i class="fas fa-user"></i>
+            <input type="text" id="lastName" placeholder="Doe" required>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Email Address</label>
+        <div class="input-wrapper">
+          <i class="fas fa-envelope"></i>
+          <input type="email" id="email" placeholder="name@example.com" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <div class="input-wrapper">
+          <i class="fas fa-lock"></i>
+          <input type="password" id="password" placeholder="Create a strong password" required>
+          <button type="button" class="password-toggle" id="togglePasswordBtn">
+            <i class="fas fa-eye-slash"></i>
+          </button>
+        </div>
+        <div class="password-strength">
+          <div class="strength-bar" id="strength-bar"></div>
+        </div>
+        <span class="strength-text" id="strength-text">Use 8+ characters with letters & numbers</span>
+      </div>
+
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <div class="input-wrapper">
+          <i class="fas fa-lock"></i>
+          <input type="password" id="confirmPassword" placeholder="Confirm your password" required>
+          <button type="button" class="password-toggle" id="toggleConfirmPasswordBtn">
+            <i class="fas fa-eye-slash"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="terms">
+        <input type="checkbox" id="terms" required>
+        <label for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+      </div>
+
+      <button type="submit" class="btn-gold" id="submit-btn">Create Account <i class="fas fa-arrow-right"></i></button>
+    </form>
+
+    <div class="auth-divider"><span>OR</span></div>
+
+    <div class="social-login">
+      <button class="social-btn" onclick="alert('Google sign up coming soon')"><i class="fab fa-google"></i> Sign up with Google</button>
+      <button class="social-btn" onclick="alert('Apple sign up coming soon')"><i class="fab fa-apple"></i> Sign up with Apple</button>
+    </div>
+
+    <div class="login-link">Already have an account? <a href="login.html">Sign In</a></div>
+  </div>
+</div>
+
+<div class="auth-footer"><p>© 2024 Dollarchic's Store. All Rights Reserved.</p></div>
+
+<script>
+/* Ambient canvas animation */
+(function() {
+  const canvas = document.getElementById('ambient-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+  
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+  
+  class Particle {
+    constructor() { this.reset(); }
+    reset() {
+      this.x = Math.random() * W;
+      this.y = Math.random() * H;
+      this.size = Math.random() * 2.5 + 0.5;
+      this.speedX = (Math.random() - 0.5) * 0.2;
+      this.speedY = -Math.random() * 0.3 - 0.05;
+      this.opacity = Math.random() * 0.4;
+    }
+    update() {
+      this.x += this.speedX;
+      this.y += this.speedY;
+      if (this.y < -50 || this.x > W + 50 || this.x < -50) this.reset();
+    }
+    draw() {
+      ctx.save();
+      ctx.globalAlpha = this.opacity;
+      const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 3);
+      grad.addColorStop(0, '#f0c842');
+      grad.addColorStop(0.4, '#d4a830');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+  
+  for (let i = 0; i < 60; i++) particles.push(new Particle());
+  
+  function loop() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => { p.update(); p.draw(); });
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+/* Password toggle */
+function setupPasswordToggle(inputId, toggleBtnId) {
+  const input = document.getElementById(inputId);
+  const toggleBtn = document.getElementById(toggleBtnId);
+  if (!input || !toggleBtn) return;
+  toggleBtn.addEventListener('click', function() {
+    const icon = toggleBtn.querySelector('i');
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.classList.remove('fa-eye-slash');
+      icon.classList.add('fa-eye');
+    } else {
+      input.type = 'password';
+      icon.classList.remove('fa-eye');
+      icon.classList.add('fa-eye-slash');
+    }
+  });
+}
+
+setupPasswordToggle('password', 'togglePasswordBtn');
+setupPasswordToggle('confirmPassword', 'toggleConfirmPasswordBtn');
+
+/* Password strength */
+const passwordInput = document.getElementById('password');
+const strengthBar = document.getElementById('strength-bar');
+const strengthText = document.getElementById('strength-text');
+
+function checkPasswordStrength(password) {
+  let strength = 0;
+  if (password.length >= 8) strength++;
+  if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+  if (password.match(/\d/)) strength++;
+  if (password.match(/[^a-zA-Z\d]/)) strength++;
+  return strength;
+}
+
+function updateStrengthIndicator() {
+  const password = passwordInput.value;
+  const strength = checkPasswordStrength(password);
+  const percentage = (strength / 4) * 100;
+  strengthBar.style.width = percentage + '%';
+  
+  if (strength === 0 || password.length === 0) {
+    strengthBar.style.background = 'rgba(255,255,255,0.1)';
+    strengthText.textContent = 'Use 8+ characters with letters & numbers';
+    strengthText.style.color = 'rgba(248,244,237,0.3)';
+  } else if (strength === 1) {
+    strengthBar.style.background = '#e88a6a';
+    strengthText.textContent = 'Weak — add more variety';
+    strengthText.style.color = '#e88a6a';
+  } else if (strength === 2) {
+    strengthBar.style.background = '#f0c842';
+    strengthText.textContent = 'Fair — add numbers or symbols';
+    strengthText.style.color = '#f0c842';
+  } else if (strength === 3) {
+    strengthBar.style.background = '#6ad4a0';
+    strengthText.textContent = 'Strong password';
+    strengthText.style.color = '#6ad4a0';
+  } else {
+    strengthBar.style.background = '#2a8a5c';
+    strengthText.textContent = 'Very strong — excellent!';
+    strengthText.style.color = '#2a8a5c';
+  }
+}
+
+passwordInput.addEventListener('input', updateStrengthIndicator);
+
+/* Email validation */
+function isValidEmail(email) {
+  return /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/.test(email);
+}
+
+/* Signup handler with Supabase */
+document.getElementById('signup-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const firstName = document.getElementById('firstName').value.trim();
+  const lastName = document.getElementById('lastName').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+  const terms = document.getElementById('terms').checked;
+  const messageDiv = document.getElementById('message');
+  
+  // Validation
+  if (!firstName || !lastName) {
+    messageDiv.textContent = 'Please enter your full name';
+    messageDiv.classList.add('show');
+    setTimeout(() => messageDiv.classList.remove('show'), 3000);
+    return;
+  }
+  
+  if (!isValidEmail(email)) {
+    messageDiv.textContent = 'Please enter a valid email address';
+    messageDiv.classList.add('show');
+    setTimeout(() => messageDiv.classList.remove('show'), 3000);
+    return;
+  }
+  
+  if (password.length < 8) {
+    messageDiv.textContent = 'Password must be at least 8 characters';
+    messageDiv.classList.add('show');
+    setTimeout(() => messageDiv.classList.remove('show'), 3000);
+    return;
+  }
+  
+  if (password !== confirmPassword) {
+    messageDiv.textContent = 'Passwords do not match';
+    messageDiv.classList.add('show');
+    setTimeout(() => messageDiv.classList.remove('show'), 3000);
+    return;
+  }
+  
+  if (!terms) {
+    messageDiv.textContent = 'You must agree to the Terms of Service';
+    messageDiv.classList.add('show');
+    setTimeout(() => messageDiv.classList.remove('show'), 3000);
+    return;
+  }
+  
+  // Call Supabase signup
+  const btn = document.getElementById('submit-btn');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = 'Creating Account... <i class="fas fa-spinner fa-spin"></i>';
+  btn.disabled = true;
+  
+  // Check if auth functions exist
+  if (typeof window.dollarchicAuth === 'undefined') {
+    messageDiv.textContent = 'Supabase not initialized. Please check your connection.';
+    messageDiv.classList.add('show');
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+    return;
+  }
+  
+  const result = await window.dollarchicAuth.signUp(email, password, firstName, lastName);
+  
+  if (result.success) {
+    messageDiv.textContent = 'Account created successfully! Redirecting...';
+    messageDiv.classList.add('show', 'success');
+    
+    setTimeout(() => {
+      window.location.href = 'login.html';
+    }, 1500);
+  } else {
+    messageDiv.textContent = result.error || 'Sign up failed. Please try again.';
+    messageDiv.classList.add('show');
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+    
+    setTimeout(() => messageDiv.classList.remove('show'), 3000);
+  }
+});
+</script>
+</body>
+</html>
