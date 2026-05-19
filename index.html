@@ -1439,7 +1439,7 @@ function updateAuthUI() {
     
     document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
   } else {
-    const loginHTML = `<button class="login-btn" id="loginBtn"><i class="fas fa-user"></i><span>Sign In</span></button>`;
+    const loginHTML = `<button class="login-btn" id="loginBtn" onclick="window.location.href = 'login.html'"><i class="fas fa-user"></i><span>Sign In</span></button>`;
     authContainer.innerHTML = loginHTML;
     if (sidebarAuth) sidebarAuth.innerHTML = loginHTML;
     
