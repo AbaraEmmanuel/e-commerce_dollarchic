@@ -15,6 +15,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase.js"></script>
     
+    <!-- Cart with Supabase -->
+    <script src="js/cart.js"></script>
+    
     <!-- Main CSS -->
     <link rel="stylesheet" href="css/style.css">
     
@@ -346,7 +349,7 @@
                 </select>
             </div>
         </div>
-    </div>
+    </section>
 
     <!-- Products Section -->
     <section class="products-section">
@@ -439,11 +442,10 @@
 
     <script>
         // ============================================
-        // STATE
+        // STATE (Products only - Cart is now in cart.js)
         // ============================================
 
         let scentsProducts = [];
-        let cart = [];
         let currentUser = null;
         let isAuthenticated = false;
         let currentCategory = 'all';
@@ -583,7 +585,7 @@
                             <img src="${product.image}" alt="${product.name}" loading="lazy">
                             ${product.badge ? `<span class="product-badge">${product.badge}</span>` : ''}
                             <div class="product-overlay">
-                                <button class="quick-add-btn" onclick="event.stopPropagation(); addToCart(${product.id})">
+                                <button class="quick-add-btn" onclick="event.stopPropagation(); addToCartFunction(${product.id})">
                                     <i class="fas fa-shopping-bag"></i> Add to Bag
                                 </button>
                             </div>
@@ -625,84 +627,23 @@
             return div.innerHTML;
         }
 
-        // ============================================
-        // CART
-        // ============================================
-
-        function loadCart() {
-            const saved = localStorage.getItem('dollarchic_cart');
-            if (saved) cart = JSON.parse(saved);
-            updateCartUI();
-        }
-
-        function saveCart() {
-            localStorage.setItem('dollarchic_cart', JSON.stringify(cart));
-            updateCartUI();
-        }
-
-        function addToCart(productId) {
+        // Helper function to get product by ID for cart
+        async function addToCartFunction(productId) {
             const product = scentsProducts.find(p => p.id === productId);
             if (!product) return;
-            const existing = cart.find(item => item.id === productId);
-            if (existing) existing.quantity += 1;
-            else cart.push({ ...product, quantity: 1 });
-            saveCart();
-            showNotification(`${product.name} added to bag`);
-            animateCartIcon();
-        }
-
-        function removeFromCart(productId) {
-            cart = cart.filter(item => item.id !== productId);
-            saveCart();
-        }
-
-        function updateQuantity(productId, change) {
-            const item = cart.find(item => item.id === productId);
-            if (item) {
-                item.quantity += change;
-                if (item.quantity <= 0) removeFromCart(productId);
-                else saveCart();
+            
+            // Check if cart.js is loaded and has the function
+            if (typeof window.addToCart === 'function') {
+                await window.addToCart(product);
+            } else {
+                console.error('Cart.js not loaded properly');
+                showNotification('Cart system loading... Please try again');
             }
         }
 
-        function getCartTotal() {
-            return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        }
-
-        function getCartCount() {
-            return cart.reduce((sum, item) => sum + item.quantity, 0);
-        }
-
-        function updateCartUI() {
-            const cartCountEl = document.getElementById('cartCount');
-            if (cartCountEl) cartCountEl.textContent = getCartCount();
-
-            const cartItemsEl = document.getElementById('cartItems');
-            const cartTotalEl = document.getElementById('cartTotal');
-
-            if (cartItemsEl && cartTotalEl) {
-                if (cart.length === 0) {
-                    cartItemsEl.innerHTML = '<div class="empty-cart"><i class="fas fa-shopping-bag"></i><p>Your bag is empty</p></div>';
-                } else {
-                    cartItemsEl.innerHTML = cart.map(item => `
-                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #eee;">
-                            <img src="${item.image}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 12px;">
-                            <div style="flex: 1;">
-                                <h4 style="margin-bottom: 0.25rem;">${item.name}</h4>
-                                <p style="color: var(--gold-pure); font-weight: 600;">₦${item.price}</p>
-                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
-                                    <button onclick="updateQuantity(${item.id}, -1)" style="width: 28px; height: 28px; border: 1px solid #ddd; background: white; border-radius: 8px; cursor: pointer;">-</button>
-                                    <span>${item.quantity}</span>
-                                    <button onclick="updateQuantity(${item.id}, 1)" style="width: 28px; height: 28px; border: 1px solid #ddd; background: white; border-radius: 8px; cursor: pointer;">+</button>
-                                    <button onclick="removeFromCart(${item.id})" style="margin-left: auto; background: none; border: none; color: #999; cursor: pointer;"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </div>
-                        </div>`).join('');
-                }
-                cartTotalEl.textContent = `₦${getCartTotal().toFixed(2)}`;
-            }
-        }
-
+        // Make it available globally
+        window.addToCartFunction = addToCartFunction;
+        
         function showNotification(message) {
             const notification = document.createElement('div');
             notification.className = 'notification-toast';
@@ -713,14 +654,6 @@
                 notification.classList.remove('show');
                 setTimeout(() => notification.remove(), 300);
             }, 3000);
-        }
-
-        function animateCartIcon() {
-            const icon = document.querySelector('.cart-btn');
-            if (icon) {
-                icon.style.transform = 'scale(1.1)';
-                setTimeout(() => icon.style.transform = '', 200);
-            }
         }
 
         // ============================================
@@ -846,17 +779,11 @@
             });
         }
 
-        // Make functions global for inline onclick handlers
-        window.addToCart = addToCart;
-        window.removeFromCart = removeFromCart;
-        window.updateQuantity = updateQuantity;
-
         // ============================================
-        // BOOT — loader hides inside loadProducts() via finally{}
+        // BOOT
         // ============================================
         document.addEventListener('DOMContentLoaded', async () => {
             console.log('DOM loaded, starting...');
-            loadCart();
             initNavScroll();
             initCartSidebar();
             initMobileMenu();

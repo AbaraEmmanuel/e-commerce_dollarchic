@@ -15,6 +15,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase.js"></script>
     
+    <!-- Cart with Supabase -->
+    <script src="js/cart.js"></script>
+    
     <!-- Main CSS -->
     <link rel="stylesheet" href="css/style.css">
     
@@ -95,6 +98,39 @@
             transition: all 0.3s ease !important;
             transform: translateY(20px) !important;
             opacity: 0 !important;
+            position: relative !important;
+            overflow: hidden !important;
+        }
+
+        .quick-add-btn.loading {
+            pointer-events: none !important;
+            opacity: 0.7 !important;
+        }
+
+        .quick-add-btn.loading::after {
+            content: '' !important;
+            position: absolute !important;
+            width: 16px !important;
+            height: 16px !important;
+            top: 50% !important;
+            right: 12px !important;
+            transform: translateY(-50%) !important;
+            border: 2px solid rgba(8, 15, 18, 0.3) !important;
+            border-top-color: var(--obs-deep) !important;
+            border-radius: 50% !important;
+            animation: spin 0.6s linear infinite !important;
+        }
+
+        .quick-add-btn i {
+            transition: opacity 0.2s ease !important;
+        }
+
+        .quick-add-btn.loading i {
+            opacity: 0 !important;
+        }
+
+        .quick-add-btn.loading span {
+            opacity: 0.5 !important;
         }
 
         .product-card:hover .quick-add-btn {
@@ -273,7 +309,6 @@
                 <a href="index.html" class="nav-link">Home</a>
                 <a href="scents.html" class="nav-link">Scents</a>
                 <a href="bags.html" class="nav-link active">Bags</a>
-                <a href="about.html" class="nav-link">Maison</a>
             </div>
             <div class="nav-icons">
                 <button class="icon-btn search-toggle" onclick="alert('Search coming soon!');"><i class="fas fa-search"></i></button>
@@ -320,7 +355,7 @@
                 </select>
             </div>
         </div>
-    </div>
+    </section>
 
     <!-- Products Section -->
     <section class="products-section">
@@ -417,7 +452,6 @@
         // ============================================
 
         let bagsProducts = [];
-        let cart = [];
         let currentUser = null;
         let isAuthenticated = false;
         let currentCategory = 'all';
@@ -471,18 +505,8 @@
 
                 console.log('Supabase ready, fetching bags...');
 
-                // Use getBags if it exists, otherwise fall back to getScents with bag filter
-                let result;
-                if (typeof window.dollarchicProducts.getBags === 'function') {
-                    result = await window.dollarchicProducts.getBags();
-                } else {
-                    // Fallback: fetch all products and filter by category = 'bag'
-                    result = await window.dollarchicProducts.getScents();
-                    if (result.success && result.data) {
-                        result.data = result.data.filter(p => p.category === 'bag');
-                    }
-                }
-
+                // Get bags from Supabase
+                const result = await window.dollarchicProducts.getBags();
                 console.log('Result:', result);
 
                 if (result.success && result.data && result.data.length > 0) {
@@ -491,8 +515,8 @@
                         name: product.name,
                         price: parseFloat(product.price),
                         image: product.image_url,
-                        category: product.family || product.subcategory || 'tote',
-                        material: product.material || product.description || null,
+                        category: product.type || product.category || 'tote',
+                        material: product.material || null,
                         badge: product.badge || null
                     }));
 
@@ -560,24 +584,28 @@
             container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(300px, 1fr))';
             container.style.gap = '2rem';
 
-            container.innerHTML = filtered.map(product => `
-                <div class="product-card" data-id="${product.id}">
-                    <div class="product-image">
-                        <img src="${product.image}" alt="${escapeHtml(product.name)}" loading="lazy">
-                        ${product.badge ? `<span class="product-badge">${product.badge}</span>` : ''}
-                        <div class="product-overlay">
-                            <button class="quick-add-btn" onclick="event.stopPropagation(); addToCart(${product.id})">
-                                <i class="fas fa-shopping-bag"></i> Add to Bag
-                            </button>
+            let html = '';
+            for (const product of filtered) {
+                html += `
+                    <div class="product-card" data-id="${product.id}">
+                        <div class="product-image">
+                            <img src="${product.image}" alt="${escapeHtml(product.name)}" loading="lazy">
+                            ${product.badge ? `<span class="product-badge">${product.badge}</span>` : ''}
+                            <div class="product-overlay">
+                                <button class="quick-add-btn" onclick="event.stopPropagation(); addToCartFunction(event, ${product.id})">
+                                    <i class="fas fa-shopping-bag"></i> <span>Add to Bag</span>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">${escapeHtml(product.name)}</h3>
-                        <p class="product-price">₦${product.price.toFixed(2)}</p>
-                        ${product.material ? `<p class="product-material">${escapeHtml(product.material)}</p>` : ''}
-                    </div>
-                </div>
-            `).join('');
+                        <div class="product-info">
+                            <h3 class="product-name">${escapeHtml(product.name)}</h3>
+                            <p class="product-price">₦${product.price.toFixed(2)}</p>
+                            ${product.material ? `<p class="product-material">${escapeHtml(product.material)}</p>` : ''}
+                        </div>
+                    </div>`;
+            }
+            container.innerHTML = html;
+            console.log('Rendered', filtered.length, 'bags');
 
             attachHoverEffects();
         }
@@ -591,12 +619,18 @@
                 card.addEventListener('mouseenter', () => {
                     if (img) img.style.transform = 'scale(1.08)';
                     if (overlay) overlay.style.opacity = '1';
-                    if (addBtn) { addBtn.style.transform = 'translateY(0)'; addBtn.style.opacity = '1'; }
+                    if (addBtn && !addBtn.classList.contains('loading')) { 
+                        addBtn.style.transform = 'translateY(0)'; 
+                        addBtn.style.opacity = '1'; 
+                    }
                 });
                 card.addEventListener('mouseleave', () => {
                     if (img) img.style.transform = 'scale(1)';
                     if (overlay) overlay.style.opacity = '0';
-                    if (addBtn) { addBtn.style.transform = 'translateY(20px)'; addBtn.style.opacity = '0'; }
+                    if (addBtn && !addBtn.classList.contains('loading')) { 
+                        addBtn.style.transform = 'translateY(20px)'; 
+                        addBtn.style.opacity = '0'; 
+                    }
                 });
             });
         }
@@ -608,80 +642,49 @@
         }
 
         // ============================================
-        // CART
+        // ADD TO CART WITH LOADING STATE
         // ============================================
 
-        function loadCart() {
-            const saved = localStorage.getItem('dollarchic_cart');
-            if (saved) cart = JSON.parse(saved);
-            updateCartUI();
-        }
-
-        function saveCart() {
-            localStorage.setItem('dollarchic_cart', JSON.stringify(cart));
-            updateCartUI();
-        }
-
-        function addToCart(productId) {
+        async function addToCartFunction(event, productId) {
+            const button = event.currentTarget;
             const product = bagsProducts.find(p => p.id === productId);
             if (!product) return;
-            const existing = cart.find(item => item.id === productId);
-            if (existing) existing.quantity += 1;
-            else cart.push({ ...product, quantity: 1 });
-            saveCart();
-            showNotification(`${product.name} added to bag`);
-            animateCartIcon();
-        }
-
-        function removeFromCart(productId) {
-            cart = cart.filter(item => item.id !== productId);
-            saveCart();
-        }
-
-        function updateQuantity(productId, change) {
-            const item = cart.find(item => item.id === productId);
-            if (item) {
-                item.quantity += change;
-                if (item.quantity <= 0) removeFromCart(productId);
-                else saveCart();
-            }
-        }
-
-        function getCartTotal() {
-            return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        }
-
-        function getCartCount() {
-            return cart.reduce((sum, item) => sum + item.quantity, 0);
-        }
-
-        function updateCartUI() {
-            const cartCountEl = document.getElementById('cartCount');
-            if (cartCountEl) cartCountEl.textContent = getCartCount();
-
-            const cartItemsEl = document.getElementById('cartItems');
-            const cartTotalEl = document.getElementById('cartTotal');
-
-            if (cartItemsEl && cartTotalEl) {
-                if (cart.length === 0) {
-                    cartItemsEl.innerHTML = '<div class="empty-cart"><i class="fas fa-shopping-bag"></i><p>Your bag is empty</p></div>';
+            
+            // Prevent multiple clicks
+            if (button.classList.contains('loading')) return;
+            
+            // Add loading state
+            button.classList.add('loading');
+            button.disabled = true;
+            
+            try {
+                // Check if cart.js is loaded and has the function
+                if (typeof window.addToCart === 'function') {
+                    await window.addToCart(product);
                 } else {
-                    cartItemsEl.innerHTML = cart.map(item => `
-                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #eee;">
-                            <img src="${item.image}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 12px;">
-                            <div style="flex: 1;">
-                                <h4 style="margin-bottom: 0.25rem;">${item.name}</h4>
-                                <p style="color: var(--gold-pure); font-weight: 600;">₦${item.price}</p>
-                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
-                                    <button onclick="updateQuantity(${item.id}, -1)" style="width: 28px; height: 28px; border: 1px solid #ddd; background: white; border-radius: 8px; cursor: pointer;">-</button>
-                                    <span>${item.quantity}</span>
-                                    <button onclick="updateQuantity(${item.id}, 1)" style="width: 28px; height: 28px; border: 1px solid #ddd; background: white; border-radius: 8px; cursor: pointer;">+</button>
-                                    <button onclick="removeFromCart(${item.id})" style="margin-left: auto; background: none; border: none; color: #999; cursor: pointer;"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </div>
-                        </div>`).join('');
+                    console.error('Cart.js not loaded properly');
+                    showNotification('Cart system loading... Please try again');
                 }
-                cartTotalEl.textContent = `₦${getCartTotal().toFixed(2)}`;
+            } catch (error) {
+                console.error('Error adding to cart:', error);
+                showNotification('Failed to add to bag. Please try again.');
+            } finally {
+                // Remove loading state after a short delay
+                setTimeout(() => {
+                    button.classList.remove('loading');
+                    button.disabled = false;
+                    
+                    // Reset transform if not hovering
+                    const parentCard = button.closest('.product-card');
+                    const isHovering = parentCard?.matches(':hover');
+                    if (!isHovering) {
+                        button.style.transform = 'translateY(20px)';
+                        button.style.opacity = '0';
+                    } else {
+                        button.style.transform = 'translateY(0)';
+                        button.style.opacity = '1';
+                    }
+                }, 500);
             }
         }
 
@@ -695,11 +698,6 @@
                 notification.classList.remove('show');
                 setTimeout(() => notification.remove(), 300);
             }, 3000);
-        }
-
-        function animateCartIcon() {
-            const icon = document.querySelector('.cart-btn');
-            if (icon) { icon.style.transform = 'scale(1.1)'; setTimeout(() => icon.style.transform = '', 200); }
         }
 
         // ============================================
@@ -825,17 +823,14 @@
             });
         }
 
-        // Make functions global for inline onclick handlers
-        window.addToCart = addToCart;
-        window.removeFromCart = removeFromCart;
-        window.updateQuantity = updateQuantity;
+        // Make functions global
+        window.addToCartFunction = addToCartFunction;
 
         // ============================================
         // BOOT — loader hides inside loadProducts() via finally{}
         // ============================================
         document.addEventListener('DOMContentLoaded', async () => {
             console.log('DOM loaded, starting bags...');
-            loadCart();
             initNavScroll();
             initCartSidebar();
             initMobileMenu();

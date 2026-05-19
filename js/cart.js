@@ -4,6 +4,7 @@
 
 let cart = [];
 let currentSessionId = null;
+let isLoading = false; // Global loading state for cart operations
 
 // Generate or retrieve session ID
 function getSessionId() {
@@ -16,10 +17,36 @@ function getSessionId() {
 }
 
 // ============================================
+// LOADING INDICATORS
+// ============================================
+
+function showCartLoading() {
+    const cartItemsEl = document.getElementById('cartItems');
+    if (cartItemsEl && cartItemsEl.innerHTML !== '<div class="empty-cart"><i class="fas fa-shopping-bag"></i><p>Your bag is empty</p></div>') {
+        cartItemsEl.innerHTML = `
+            <div class="cart-loading-state" style="text-align: center; padding: 3rem;">
+                <div class="loading-spinner-small" style="width: 30px; height: 30px; border: 2px solid rgba(210, 170, 50, 0.2); border-top-color: var(--gold-pure); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem;"></div>
+                <p style="color: var(--ash); font-size: 0.8rem;">Updating your bag...</p>
+            </div>
+        `;
+    }
+}
+
+function hideCartLoading() {
+    // The actual cart content will be restored by updateCartUI
+}
+
+// ============================================
 // LOAD CART FROM SUPABASE
 // ============================================
 
 async function loadCart() {
+    // Show loading indicator in cart if cart is open
+    const cartSidebar = document.getElementById('cart-sidebar');
+    if (cartSidebar && cartSidebar.classList.contains('open')) {
+        showCartLoading();
+    }
+    
     try {
         const currentUser = await getCurrentUserFromSupabase();
         
@@ -40,10 +67,8 @@ async function loadCart() {
             `);
         
         if (currentUser) {
-            // Logged in user - get cart by user_id
             query = query.eq('user_id', currentUser.id);
         } else {
-            // Guest user - get cart by session_id
             currentSessionId = getSessionId();
             query = query.eq('session_id', currentSessionId);
         }
@@ -70,7 +95,6 @@ async function loadCart() {
         updateCartUI();
     } catch (error) {
         console.error('Error loading cart from Supabase:', error);
-        // Fallback to localStorage if Supabase fails
         loadCartFromLocalStorage();
     }
 }
@@ -81,7 +105,6 @@ function loadCartFromLocalStorage() {
     if (saved) {
         cart = JSON.parse(saved);
         updateCartUI();
-        // Sync to Supabase if possible
         syncCartToSupabase();
     }
 }
@@ -90,7 +113,18 @@ function loadCartFromLocalStorage() {
 // SAVE CART TO SUPABASE
 // ============================================
 
-async function saveCart() {
+async function saveCart(showLoadingIndicator = true) {
+    if (isLoading) return;
+    isLoading = true;
+    
+    // Show loading in cart sidebar if it's open
+    const cartSidebar = document.getElementById('cart-sidebar');
+    const cartWasOpen = cartSidebar && cartSidebar.classList.contains('open');
+    
+    if (showLoadingIndicator && cartWasOpen) {
+        showCartLoading();
+    }
+    
     try {
         const currentUser = await getCurrentUserFromSupabase();
         
@@ -107,7 +141,6 @@ async function saveCart() {
                 cartItem.session_id = currentSessionId;
             }
             
-            // Check if item already exists in cart
             let existingQuery = window.dollarchicSupabase
                 .from('carts')
                 .select('id')
@@ -122,41 +155,40 @@ async function saveCart() {
             const { data: existing } = await existingQuery;
             
             if (existing && existing.length > 0) {
-                // Update existing item
                 await window.dollarchicSupabase
                     .from('carts')
                     .update({ quantity: item.quantity, updated_at: new Date() })
                     .eq('id', existing[0].id);
             } else {
-                // Insert new item
                 await window.dollarchicSupabase
                     .from('carts')
                     .insert([cartItem]);
             }
         }
         
-        // Remove items that are no longer in cart
         const productIds = cart.map(item => item.id);
-        let deleteQuery = window.dollarchicSupabase
-            .from('carts')
-            .delete()
-            .not('product_id', 'in', `(${productIds.join(',')})`);
-        
-        if (currentUser) {
-            deleteQuery = deleteQuery.eq('user_id', currentUser.id);
-        } else {
-            deleteQuery = deleteQuery.eq('session_id', currentSessionId);
+        if (productIds.length > 0) {
+            let deleteQuery = window.dollarchicSupabase
+                .from('carts')
+                .delete()
+                .not('product_id', 'in', `(${productIds.join(',')})`);
+            
+            if (currentUser) {
+                deleteQuery = deleteQuery.eq('user_id', currentUser.id);
+            } else {
+                deleteQuery = deleteQuery.eq('session_id', currentSessionId);
+            }
+            
+            await deleteQuery;
         }
         
-        await deleteQuery;
-        
-        // Backup to localStorage as fallback
         localStorage.setItem('dollarchic_cart_backup', JSON.stringify(cart));
         
     } catch (error) {
         console.error('Error saving cart to Supabase:', error);
-        // Fallback to localStorage
         localStorage.setItem('dollarchic_cart_backup', JSON.stringify(cart));
+    } finally {
+        isLoading = false;
     }
     
     updateCartUI();
@@ -210,10 +242,21 @@ async function getCurrentUserFromSupabase() {
 }
 
 // ============================================
-// CART OPERATIONS
+// CART OPERATIONS (with loading states)
 // ============================================
 
+// Main function that accepts a product object
 async function addToCart(product) {
+    // Validate product
+    if (!product || !product.id) {
+        console.error('Invalid product data:', product);
+        showNotification('Unable to add item. Please try again.', 'error');
+        return;
+    }
+    
+    // Show loading on the product button (handled by the page)
+    // The page's button will show its own loading spinner
+    
     const existing = cart.find(item => item.id === product.id);
     
     if (existing) {
@@ -222,24 +265,33 @@ async function addToCart(product) {
         cart.push({ ...product, quantity: 1 });
     }
     
-    await saveCart();
-    showNotification(`${product.name} added to bag`);
+    await saveCart(true);
+    updateCartBadge();
+    showNotification(`${product.name} added to bag`, 'success');
     animateCartIcon();
 }
 
 async function removeFromCart(productId) {
+    // Show loading in cart
+    showCartLoading();
+    
     cart = cart.filter(item => item.id !== productId);
-    await saveCart();
+    await saveCart(true);
+    
+    const productName = cart.find(item => item.id === productId)?.name || 'Item';
+    showNotification(`Removed from bag`, 'info');
 }
 
 async function updateQuantity(productId, change) {
     const item = cart.find(item => item.id === productId);
     if (item) {
-        item.quantity += change;
-        if (item.quantity <= 0) {
+        const newQuantity = item.quantity + change;
+        
+        if (newQuantity <= 0) {
             await removeFromCart(productId);
         } else {
-            await saveCart();
+            item.quantity = newQuantity;
+            await saveCart(true);
         }
     }
 }
@@ -252,28 +304,50 @@ function getCartCount() {
     return cart.reduce((sum, item) => sum + item.quantity, 0);
 }
 
+function updateCartBadge() {
+    const cartCountEl = document.getElementById('cart-count');
+    if (cartCountEl) {
+        cartCountEl.textContent = getCartCount();
+        // Animate badge when count changes
+        cartCountEl.style.transform = 'scale(1.2)';
+        setTimeout(() => {
+            if (cartCountEl) cartCountEl.style.transform = '';
+        }, 200);
+    }
+}
+
 function updateCartUI() {
-    const cartCountEl = document.getElementById('cartCount');
-    if (cartCountEl) cartCountEl.textContent = getCartCount();
+    updateCartBadge();
     
-    const cartItemsEl = document.getElementById('cartItems');
-    const cartTotalEl = document.getElementById('cartTotal');
+    const cartItemsEl = document.getElementById('cart-body');
+    const cartTotalEl = document.getElementById('cart-total');
     
     if (cartItemsEl && cartTotalEl) {
         if (cart.length === 0) {
-            cartItemsEl.innerHTML = '<div class="empty-cart"><i class="fas fa-shopping-bag"></i><p>Your bag is empty</p></div>';
+            cartItemsEl.innerHTML = `
+                <div class="cart-empty" style="text-align: center; padding: 4rem 2rem;">
+                    <i class="fas fa-shopping-bag" style="font-size: 3rem; color: rgba(212,168,48,0.2); margin-bottom: 1rem; display: block;"></i>
+                    <p style="font-family: var(--serif); font-style: italic; color: rgba(248,244,237,0.3); font-size: 1.1rem;">Your bag awaits</p>
+                    <p style="font-size: 0.7rem; color: rgba(248,244,237,0.2); margin-top: 0.5rem;">Add something exquisite</p>
+                </div>
+            `;
         } else {
             cartItemsEl.innerHTML = cart.map(item => `
-                <div style="display: flex; gap: 1rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #eee;">
-                    <img src="${item.image}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 12px;">
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.04);" class="cart-item-${item.id}">
+                    <img src="${item.image}" style="width: 72px; height: 90px; object-fit: cover; border-radius: 12px; flex-shrink: 0;">
                     <div style="flex: 1;">
-                        <h4 style="margin-bottom: 0.25rem;">${item.name}</h4>
-                        <p style="color: var(--gold-pure); font-weight: 600;">₦${item.price}</p>
-                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
-                            <button onclick="updateQuantity(${item.id}, -1)" style="width: 28px; height: 28px; border: 1px solid #ddd; background: white; border-radius: 8px; cursor: pointer;">-</button>
-                            <span>${item.quantity}</span>
-                            <button onclick="updateQuantity(${item.id}, 1)" style="width: 28px; height: 28px; border: 1px solid #ddd; background: white; border-radius: 8px; cursor: pointer;">+</button>
-                            <button onclick="removeFromCart(${item.id})" style="margin-left: auto; background: none; border: none; color: #999; cursor: pointer;"><i class="fas fa-trash"></i></button>
+                        <div style="font-family: var(--serif); font-size: 1rem; font-weight: 300; color: var(--bone); margin-bottom: 0.25rem;">${escapeHtml(item.name)}</div>
+                        <div style="font-family: var(--display); font-size: 0.55rem; letter-spacing: 0.15em; color: var(--gold-2); margin-bottom: 0.75rem;">${item.category || 'Luxury Item'}</div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <button onclick="window.updateQuantity(${item.id}, -1)" class="cart-qty-btn" style="width: 28px; height: 28px; border: 1px solid rgba(255,255,255,0.08); background: none; color: var(--bone); cursor: pointer; font-size: 1rem; border-radius: 8px; transition: all 0.2s;">−</button>
+                                <span style="font-family: var(--display); font-size: 0.7rem; color: var(--bone); min-width: 24px; text-align: center;">${item.quantity}</span>
+                                <button onclick="window.updateQuantity(${item.id}, 1)" class="cart-qty-btn" style="width: 28px; height: 28px; border: 1px solid rgba(255,255,255,0.08); background: none; color: var(--bone); cursor: pointer; font-size: 1rem; border-radius: 8px; transition: all 0.2s;">+</button>
+                            </div>
+                            <button onclick="window.removeFromCart(${item.id})" class="cart-remove-btn" style="margin-left: auto; background: none; border: none; color: rgba(248,244,237,0.25); cursor: pointer; font-size: 0.85rem; transition: color 0.3s; padding: 0.25rem;">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                            <span style="font-family: var(--display); font-size: 0.7rem; color: var(--gold-2); letter-spacing: 0.06em;">₦${(item.price * item.quantity).toFixed(2)}</span>
                         </div>
                     </div>
                 </div>
@@ -283,10 +357,31 @@ function updateCartUI() {
     }
 }
 
-function showNotification(message) {
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showNotification(message, type = 'success') {
     const notification = document.createElement('div');
     notification.className = 'notification-toast';
-    notification.innerHTML = `<i class="fas fa-check-circle"></i><span>${message}</span>`;
+    
+    let icon = 'fa-check-circle';
+    if (type === 'error') icon = 'fa-exclamation-circle';
+    if (type === 'info') icon = 'fa-info-circle';
+    
+    notification.innerHTML = `<i class="fas ${icon}"></i><span>${message}</span>`;
+    
+    // Style based on type
+    if (type === 'error') {
+        notification.style.borderLeftColor = '#c44a2c';
+        notification.querySelector('i').style.color = '#c44a2c';
+    } else if (type === 'info') {
+        notification.style.borderLeftColor = '#f0c842';
+        notification.querySelector('i').style.color = '#f0c842';
+    }
+    
     document.body.appendChild(notification);
     setTimeout(() => notification.classList.add('show'), 10);
     setTimeout(() => {
@@ -296,9 +391,9 @@ function showNotification(message) {
 }
 
 function animateCartIcon() {
-    const icon = document.querySelector('.cart-btn');
+    const icon = document.getElementById('cart-open-btn');
     if (icon) {
-        icon.style.transform = 'scale(1.1)';
+        icon.style.transform = 'scale(1.15)';
         setTimeout(() => icon.style.transform = '', 200);
     }
 }
@@ -311,29 +406,27 @@ async function mergeGuestCartWithUser() {
     const guestCart = [...cart];
     if (guestCart.length === 0) return;
     
+    showNotification('Syncing your cart...', 'info');
+    
     try {
         const currentUser = await getCurrentUserFromSupabase();
         if (!currentUser) return;
         
-        // Get user's existing cart from Supabase
         const { data: userCart } = await window.dollarchicSupabase
             .from('carts')
             .select('product_id, quantity')
             .eq('user_id', currentUser.id);
         
-        // Merge guest cart with user cart
         for (const guestItem of guestCart) {
             const existingUserItem = userCart?.find(item => item.product_id === guestItem.id);
             
             if (existingUserItem) {
-                // Update quantity
                 await window.dollarchicSupabase
                     .from('carts')
                     .update({ quantity: existingUserItem.quantity + guestItem.quantity })
                     .eq('user_id', currentUser.id)
                     .eq('product_id', guestItem.id);
             } else {
-                // Add new item
                 await window.dollarchicSupabase
                     .from('carts')
                     .insert([{
@@ -344,18 +437,17 @@ async function mergeGuestCartWithUser() {
             }
         }
         
-        // Clear guest session cart
         await window.dollarchicSupabase
             .from('carts')
             .delete()
             .eq('session_id', getSessionId());
         
-        // Reload cart
         await loadCart();
         
-        showNotification('Cart synced with your account');
+        showNotification('Cart synced with your account', 'success');
     } catch (error) {
         console.error('Error merging cart:', error);
+        showNotification('Failed to sync cart', 'error');
     }
 }
 
@@ -365,8 +457,36 @@ async function mergeGuestCartWithUser() {
 
 // Make functions global
 window.addToCart = addToCart;
+window.addToCartById = addToCartById;
 window.removeFromCart = removeFromCart;
 window.updateQuantity = updateQuantity;
+window.getCartCount = getCartCount;
+
+// Add loading animation CSS
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .cart-qty-btn:hover {
+        border-color: var(--gold-2) !important;
+        color: var(--gold-3) !important;
+        background: rgba(212,168,48,0.1) !important;
+    }
+    
+    .cart-remove-btn:hover {
+        color: var(--gold-2) !important;
+    }
+    
+    .cart-loading-state .loading-spinner-small {
+        border: 2px solid rgba(210, 170, 50, 0.2);
+        border-top-color: var(--gold-pure);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+`;
+document.head.appendChild(style);
 
 // Load cart on page load
 document.addEventListener('DOMContentLoaded', async () => {
@@ -374,12 +494,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // Listen for auth state changes to merge cart
-if (typeof window.dollarchicAuth !== 'undefined') {
+if (typeof window.dollarchicAuth !== 'undefined' && window.dollarchicAuth.onAuthStateChange) {
     window.dollarchicAuth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN') {
             await mergeGuestCartWithUser();
         } else if (event === 'SIGNED_OUT') {
-            // Clear cart and load guest cart
             await loadCart();
         }
     });
