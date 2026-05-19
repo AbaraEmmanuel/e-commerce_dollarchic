@@ -155,13 +155,26 @@ nav.scrolled {
   border-bottom: 1px solid rgba(212,168,48,0.08);
 }
 .nav-inner {
-  max-width: 1500px; margin: 0 auto;
+  max-width: 1500px;
+  margin: 0 auto;
   padding: 0 4rem;
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
+
+/* Left section: Logo with hamburger below */
+.nav-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
 .nav-logo {
   font-family: var(--display);
-  font-size: 1.3rem; font-weight: 300;
+  font-size: 1.3rem;
+  font-weight: 300;
   letter-spacing: 0.3em;
   color: var(--bone);
   text-decoration: none;
@@ -179,21 +192,44 @@ nav.scrolled {
   50% { opacity:0.7; transform: rotate(180deg) scale(0.8); }
 }
 .logo-tagline {
-  display: block; font-family: var(--sans);
-  font-size: 0.5rem; letter-spacing: 0.35em;
-  color: rgba(212,168,48,0.5); margin-top: -0.1rem;
+  display: block;
+  font-family: var(--sans);
+  font-size: 0.5rem;
+  letter-spacing: 0.35em;
+  color: rgba(212,168,48,0.5);
+  margin-top: -0.1rem;
   text-align: right;
 }
 
+/* Hamburger Menu Button - positioned under logo */
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: rgba(248,244,237,0.7);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: color 0.3s;
+  padding: 0;
+  margin-top: 0.25rem;
+}
+.menu-toggle:hover { color: var(--gold-3); }
+
+/* Desktop navigation links */
 .nav-links {
-  display: flex; gap: 3rem; list-style: none;
+  display: flex;
+  gap: 3rem;
+  list-style: none;
 }
 .nav-links a {
   font-family: var(--display);
-  font-size: 0.62rem; letter-spacing: 0.22em;
-  text-transform: uppercase; color: rgba(248,244,237,0.55);
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(248,244,237,0.55);
   text-decoration: none;
-  position: relative; padding-bottom: 4px;
+  position: relative;
+  padding-bottom: 4px;
   transition: color 0.4s;
 }
 .nav-links a::after {
@@ -208,37 +244,55 @@ nav.scrolled {
 .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
 
 .nav-actions {
-  display: flex; align-items: center; gap: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
 }
 
-/* ===== AUTH INDICATOR ===== */
+/* Auth Indicator - Profile Avatar Styles */
 .auth-indicator {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-right: 0.5rem;
 }
 
-.verified-badge {
+.profile-avatar-btn {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  background: rgba(42, 138, 92, 0.15);
-  padding: 0.4rem 0.8rem;
+  justify-content: center;
+  gap: 0.5rem;
+  background: rgba(212,168,48,0.1);
+  border: 1px solid rgba(212,168,48,0.3);
   border-radius: 40px;
-  border: 1px solid rgba(42, 138, 92, 0.3);
+  padding: 0.3rem 0.8rem 0.3rem 0.5rem;
   cursor: pointer;
   transition: all 0.3s ease;
+  text-decoration: none;
 }
-.verified-badge:hover {
-  background: rgba(42, 138, 92, 0.25);
-  transform: translateY(-1px);
+
+.profile-avatar-btn:hover {
+  background: rgba(212,168,48,0.2);
+  transform: translateY(-2px);
+  border-color: rgba(212,168,48,0.6);
 }
-.verified-badge i { color: #2a8a5c; font-size: 0.8rem; }
-.verified-badge span {
+
+.avatar-circle {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, var(--gold-2), var(--gold-3));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatar-circle i { font-size: 0.9rem; color: var(--void); }
+
+.avatar-text {
   font-family: var(--display);
-  font-size: 0.65rem; font-weight: 400;
-  color: #2a8a5c; letter-spacing: 0.05em;
+  font-size: 0.65rem;
+  font-weight: 400;
+  color: var(--gold-champagne);
+  letter-spacing: 0.05em;
 }
 
 .logout-btn {
@@ -247,9 +301,12 @@ nav.scrolled {
   color: rgba(248,244,237,0.7);
   padding: 0.4rem 0.8rem;
   border-radius: 40px;
-  cursor: pointer; font-size: 0.7rem;
+  cursor: pointer;
+  font-size: 0.7rem;
   transition: all 0.3s ease;
-  display: flex; align-items: center; gap: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   font-family: var(--display);
 }
 .logout-btn:hover {
@@ -260,20 +317,25 @@ nav.scrolled {
 
 .login-btn {
   background: var(--gold-2);
-  border: none; color: var(--void);
+  border: none;
+  color: var(--void);
   padding: 0.4rem 1rem;
-  border-radius: 40px; cursor: pointer;
-  font-size: 0.65rem; font-weight: 500;
+  border-radius: 40px;
+  cursor: pointer;
+  font-size: 0.65rem;
+  font-weight: 500;
   letter-spacing: 0.05em;
   transition: all 0.3s ease;
-  display: flex; align-items: center; gap: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   font-family: var(--display);
 }
 .login-btn:hover { background: var(--gold-3); transform: translateY(-1px); }
 
 .nav-icon-btn {
   background: none; border: none; cursor: pointer;
-  color: rgba(248,244,237,0.5); font-size: 0.95rem;
+  color: rgba(248,244,237,0.5); font-size: 1rem;
   transition: color 0.3s, transform 0.3s;
   position: relative;
 }
@@ -281,23 +343,117 @@ nav.scrolled {
 .cart-badge {
   position: absolute; top: -8px; right: -10px;
   background: var(--gold-2); color: var(--void);
-  font-size: 0.6rem; font-weight: 600;
+  font-size: 0.55rem; font-weight: 600;
   min-width: 16px; height: 16px;
   border-radius: 50%; display: flex;
   align-items: center; justify-content: center;
 }
 
-@media (max-width: 1024px) {
-  .auth-indicator { gap: 0.3rem; }
-  .verified-badge span, .logout-btn span { display: none; }
-  .verified-badge, .logout-btn { padding: 0.4rem; }
+/* ===== MOBILE SIDEBAR MENU ===== */
+.mobile-sidebar {
+  position: fixed;
+  top: 0;
+  left: -100%;
+  width: 85%;
+  max-width: 350px;
+  height: 100vh;
+  background: var(--void);
+  z-index: 10000;
+  transition: left 0.4s var(--ease-silk);
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(212,168,48,0.1);
 }
-@media (max-width: 768px) {
-  .nav-inner { padding: 0 2rem; }
-  .nav-links { display: none; }
+.mobile-sidebar.open { left: 0; }
+
+.sidebar-header {
+  padding: 2rem 1.5rem;
+  border-bottom: 1px solid rgba(212,168,48,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.sidebar-header h3 {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: var(--gold-3);
+}
+.close-sidebar {
+  background: none;
+  border: none;
+  color: rgba(248,244,237,0.5);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.close-sidebar:hover {
+  color: var(--gold-3);
+  background: rgba(212,168,48,0.1);
+  transform: rotate(90deg);
 }
 
-/* ─── HERO ─── */
+.sidebar-nav {
+  flex: 1;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.sidebar-nav a {
+  font-family: var(--display);
+  font-size: 0.9rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(248,244,237,0.7);
+  text-decoration: none;
+  padding: 0.5rem 0;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid rgba(212,168,48,0.05);
+}
+.sidebar-nav a:hover {
+  color: var(--gold-3);
+  padding-left: 0.5rem;
+  border-bottom-color: rgba(212,168,48,0.2);
+}
+.sidebar-nav a.active { color: var(--gold-3); }
+
+.sidebar-footer {
+  padding: 1.5rem;
+  border-top: 1px solid rgba(212,168,48,0.1);
+}
+.sidebar-footer .auth-section { margin-bottom: 1rem; }
+.sidebar-footer .auth-section .login-btn,
+.sidebar-footer .auth-section .profile-avatar-btn,
+.sidebar-footer .auth-section .logout-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 0.8rem;
+}
+.sidebar-footer .auth-section .profile-avatar-btn { margin-bottom: 0.5rem; }
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+.sidebar-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Hero Section */
 .hero {
   position: relative; height: 100vh; min-height: 800px;
   display: flex; align-items: center; justify-content: center;
@@ -385,7 +541,7 @@ nav.scrolled {
   justify-content: center; flex-wrap: wrap;
 }
 
-/* ─── BUTTONS ─── */
+/* Buttons */
 .btn-gold {
   display: inline-flex; align-items: center; gap: 0.85rem;
   padding: 1.1rem 2.75rem;
@@ -426,7 +582,7 @@ nav.scrolled {
   transform: translateY(-3px);
 }
 
-/* ─── HERO SCROLL HINT ─── */
+/* Hero Scroll Hint */
 .scroll-hint {
   position: absolute; bottom: 2.5rem; left: 50%;
   transform: translateX(-50%);
@@ -452,7 +608,7 @@ nav.scrolled {
 }
 @keyframes scrollFlow { 0% { top: -100%; } 100% { top: 100%; } }
 
-/* ─── MARQUEE TICKER ─── */
+/* Ticker */
 .ticker-wrap {
   position: relative; z-index: 1;
   background: var(--abyss);
@@ -475,7 +631,7 @@ nav.scrolled {
 .ticker-item .star { color: var(--gold-3); font-size: 0.5rem; }
 @keyframes tickerMove { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-/* ─── SECTION ARCHITECTURE ─── */
+/* Sections */
 section { position: relative; z-index: 1; }
 .section-tag {
   font-family: var(--display);
@@ -496,7 +652,7 @@ section { position: relative; z-index: 1; }
   margin: 1.75rem auto;
 }
 
-/* ─── COLLECTIONS ─── */
+/* Collections */
 .collections { background: var(--abyss); padding: 10rem 0; }
 .collections-header { text-align: center; margin-bottom: 6rem; }
 .coll-grid {
@@ -543,7 +699,7 @@ section { position: relative; z-index: 1; }
 .coll-link:hover { gap: 1.5rem; color: var(--gold-4); }
 .coll-divider { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: linear-gradient(to bottom, transparent, rgba(212,168,48,0.5), transparent); z-index: 10; pointer-events: none; }
 
-/* ─── FEATURED PRODUCTS ─── */
+/* Featured Products */
 .featured { background: var(--void); padding: 10rem 0; }
 .featured-wrap { max-width: 1500px; margin: 0 auto; padding: 0 4rem; }
 .featured-header { display: grid; grid-template-columns: 1fr auto; align-items: flex-end; margin-bottom: 4rem; gap: 2rem; }
@@ -596,7 +752,7 @@ section { position: relative; z-index: 1; }
 .prod-name { font-family: var(--serif); font-size: 1.15rem; font-weight: 300; color: var(--bone); margin-bottom: 0.4rem; line-height: 1.2; }
 .prod-price { font-family: var(--display); font-size: 0.7rem; letter-spacing: 0.1em; color: var(--gold-2); }
 
-/* ─── PHILOSOPHY INTERLUDE ─── */
+/* Philosophy, Horizon, Testimonial, Newsletter, Footer - abbreviated for brevity */
 .philosophy { position: relative; overflow: hidden; background: var(--deep); padding: 0; }
 .phil-bg { position: absolute; inset: 0; background-image: url('https://images.unsplash.com/photo-1590736961867-0c34c1ba254c?w=1800&q=80'); background-size: cover; background-position: center; filter: brightness(0.12) saturate(0.5); }
 .phil-overlay { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(2,4,6,0.9) 0%, rgba(2,4,6,0.4) 100%); }
@@ -613,9 +769,7 @@ section { position: relative; z-index: 1; }
 .stat-num { font-family: var(--serif); font-size: 3rem; font-weight: 300; line-height: 1; background: var(--grad-gold); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .stat-label { font-family: var(--display); font-size: 0.55rem; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(248,244,237,0.35); margin-top: 0.5rem; }
 
-/* ─── COMING SOON HORIZON ─── */
 .horizon { background: var(--abyss); padding: 10rem 0; position: relative; overflow: hidden; }
-.horizon::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle, rgba(212,168,48,0.12) 1px, transparent 1px); background-size: 40px 40px; mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%); -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%); }
 .horizon-inner { max-width: 900px; margin: 0 auto; text-align: center; padding: 0 2rem; position: relative; z-index: 1; }
 .horizon-badge { display: inline-flex; align-items: center; gap: 1rem; margin-bottom: 2.5rem; }
 .horizon-badge::before, .horizon-badge::after { content: ''; width: 30px; height: 1px; background: rgba(212,168,48,0.4); }
@@ -630,15 +784,9 @@ section { position: relative; z-index: 1; }
 .horizon-item:hover .horizon-icon-wrap { border-color: rgba(212,168,48,0.6); box-shadow: 0 0 30px rgba(212,168,48,0.1); }
 .horizon-icon-wrap i { font-size: 1.4rem; color: var(--gold-2); transition: color 0.4s; }
 .horizon-item:hover .horizon-icon-wrap i { color: var(--gold-3); }
-.horizon-icon-wrap::before, .horizon-icon-wrap::after { content: ''; position: absolute; width: 6px; height: 6px; background: var(--gold-2); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); opacity: 0; transition: opacity 0.4s, transform 0.4s; }
-.horizon-icon-wrap::before { top: -4px; left: -4px; }
-.horizon-icon-wrap::after { bottom: -4px; right: -4px; }
-.horizon-item:hover .horizon-icon-wrap::before, .horizon-item:hover .horizon-icon-wrap::after { opacity: 1; }
 .horizon-item span { font-family: var(--display); font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(248,244,237,0.35); }
 
-/* ─── TESTIMONIAL ─── */
 .testimonial-section { background: var(--void); padding: 10rem 0; position: relative; overflow: hidden; }
-.testimonial-section::before { content: '"'; position: absolute; top: -2rem; left: 50%; transform: translateX(-50%); font-family: var(--serif); font-size: 25rem; font-weight: 300; font-style: italic; color: rgba(212,168,48,0.03); line-height: 1; user-select: none; pointer-events: none; }
 .test-inner { max-width: 800px; margin: 0 auto; text-align: center; padding: 0 2rem; position: relative; z-index: 1; }
 .test-stars { display: flex; justify-content: center; gap: 0.4rem; margin-bottom: 2.5rem; }
 .test-stars i { color: var(--gold-3); font-size: 0.75rem; }
@@ -648,7 +796,6 @@ section { position: relative; z-index: 1; }
 .test-name { font-family: var(--display); font-size: 0.9rem; letter-spacing: 0.1em; color: var(--bone); margin-bottom: 0.2rem; }
 .test-role { font-family: var(--display); font-size: 0.52rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-2); }
 
-/* ─── NEWSLETTER ─── */
 .newsletter { background: var(--abyss); padding: 10rem 0; }
 .nl-card { max-width: 1200px; margin: 0 auto; padding: 0 4rem; position: relative; }
 .nl-inner { background: var(--deep); border: 1px solid rgba(212,168,48,0.12); padding: 6rem; position: relative; overflow: hidden; text-align: center; }
@@ -663,13 +810,11 @@ section { position: relative; z-index: 1; }
 .nl-desc { font-family: var(--sans); font-size: 0.8rem; font-weight: 200; color: rgba(248,244,237,0.35); letter-spacing: 0.06em; margin-bottom: 3rem; }
 .nl-form { display: flex; max-width: 520px; margin: 0 auto; }
 .nl-form input { flex: 1; padding: 1.1rem 1.75rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(212,168,48,0.15); border-right: none; color: var(--bone); font-family: var(--sans); font-size: 0.75rem; outline: none; transition: border-color 0.4s, background 0.4s; }
-.nl-form input::placeholder { color: rgba(248,244,237,0.2); }
 .nl-form input:focus { border-color: rgba(212,168,48,0.4); background: rgba(255,255,255,0.06); }
 .nl-form button { padding: 1.1rem 2.25rem; background: var(--gold-2); color: var(--void); border: none; cursor: pointer; font-family: var(--display); font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; transition: background 0.3s, transform 0.3s; white-space: nowrap; }
 .nl-form button:hover { background: var(--gold-3); transform: translateX(2px); }
 .nl-note { font-family: var(--sans); font-size: 0.58rem; letter-spacing: 0.1em; color: rgba(248,244,237,0.2); margin-top: 1.5rem; }
 
-/* ─── FOOTER ─── */
 footer { background: var(--void); border-top: 1px solid rgba(212,168,48,0.08); padding: 6rem 0 3rem; }
 .footer-grid { max-width: 1500px; margin: 0 auto; padding: 0 4rem; display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 4rem; margin-bottom: 4rem; }
 .footer-logo-text { font-family: var(--display); font-size: 1.5rem; letter-spacing: 0.2em; color: var(--bone); margin-bottom: 0.5rem; }
@@ -680,7 +825,6 @@ footer { background: var(--void); border-top: 1px solid rgba(212,168,48,0.08); p
 .social-btn { width: 36px; height: 36px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; color: rgba(248,244,237,0.3); font-size: 0.8rem; text-decoration: none; transition: all 0.4s var(--ease-silk); }
 .social-btn:hover { border-color: var(--gold-2); color: var(--gold-2); background: rgba(212,168,48,0.06); transform: translateY(-3px); }
 .footer-col h5 { font-family: var(--display); font-size: 0.55rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--gold-2); margin-bottom: 1.75rem; }
-.footer-col ul { list-style: none; }
 .footer-col ul li { margin-bottom: 0.75rem; }
 .footer-col ul li a { font-family: var(--sans); font-size: 0.8rem; font-weight: 200; color: rgba(248,244,237,0.28); text-decoration: none; letter-spacing: 0.04em; transition: color 0.3s, padding-left 0.3s; display: inline-block; }
 .footer-col ul li a:hover { color: var(--gold-4); padding-left: 6px; }
@@ -688,7 +832,7 @@ footer { background: var(--void); border-top: 1px solid rgba(212,168,48,0.08); p
 .footer-copy { font-family: var(--display); font-size: 0.52rem; letter-spacing: 0.15em; color: rgba(248,244,237,0.15); }
 .footer-pay { display: flex; gap: 1rem; font-size: 1.2rem; color: rgba(248,244,237,0.15); }
 
-/* ─── CART OVERLAY ─── */
+/* Cart Overlay & Sidebar */
 .cart-overlay {
   position: fixed; inset: 0;
   background: rgba(2,4,6,0.8);
@@ -699,7 +843,6 @@ footer { background: var(--void); border-top: 1px solid rgba(212,168,48,0.08); p
 }
 .cart-overlay.open { opacity: 1; visibility: visible; }
 
-/* ─── CART SIDEBAR ─── */
 .cart-sidebar {
   position: fixed; top: 0; right: -100%; bottom: 0;
   width: 480px; max-width: 90vw;
@@ -752,7 +895,7 @@ footer { background: var(--void); border-top: 1px solid rgba(212,168,48,0.08); p
 }
 .cart-subtotal-row span:last-child { color: var(--gold-3); }
 
-/* ─── TOAST NOTIFICATION ─── */
+/* Toast */
 .toast {
   position: fixed; bottom: 2rem; right: 2rem;
   background: var(--deep);
@@ -768,7 +911,7 @@ footer { background: var(--void); border-top: 1px solid rgba(212,168,48,0.08); p
 .toast.show { transform: translateX(0); }
 .toast i { color: var(--gold-3); }
 
-/* ─── SCROLL REVEAL ─── */
+/* Scroll Reveal */
 .sr { opacity: 0; transform: translateY(50px); transition: opacity 1s var(--ease-silk), transform 1s var(--ease-silk); }
 .sr.visible { opacity: 1; transform: translateY(0); }
 .sr-delay-1 { transition-delay: 0.1s; }
@@ -783,10 +926,9 @@ footer { background: var(--void); border-top: 1px solid rgba(212,168,48,0.08); p
 .hero-rule { animation: fadeIn 2s ease 1.2s both; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes fadeIn { from { opacity: 0; } to {} }
-
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ─── RESPONSIVE ─── */
+/* Responsive */
 @media (max-width: 1024px) {
   .coll-grid { grid-template-columns: 1fr; height: auto; }
   .coll-panel { height: 55vh; min-height: 400px; }
@@ -796,8 +938,10 @@ footer { background: var(--void); border-top: 1px solid rgba(212,168,48,0.08); p
   .nav-inner { padding: 0 2rem; }
   .featured-wrap { padding: 0 2rem; }
 }
+
 @media (max-width: 768px) {
   .nav-links { display: none; }
+  .menu-toggle { display: block; }
   .hero-rule { display: none; }
   .products-row { grid-template-columns: 1fr; }
   .hero-cta-row { flex-direction: column; align-items: center; }
@@ -813,6 +957,10 @@ footer { background: var(--void); border-top: 1px solid rgba(212,168,48,0.08); p
   .footer-grid { padding: 0 2rem; gap: 2.5rem; }
   .footer-bottom { padding: 2.5rem 2rem 0; }
   .hero-title { font-size: clamp(3rem, 11vw, 5rem); }
+  .auth-indicator .avatar-text,
+  .logout-btn span { display: none; }
+  .profile-avatar-btn,
+  .logout-btn { padding: 0.4rem; }
 }
 </style>
 </head>
@@ -832,13 +980,39 @@ footer { background: var(--void); border-top: 1px solid rgba(212,168,48,0.08); p
   <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
 </div>
 
+<!-- MOBILE SIDEBAR -->
+<div class="mobile-sidebar" id="mobileSidebar">
+  <div class="sidebar-header">
+    <h3>MENU</h3>
+    <button class="close-sidebar" id="closeSidebarBtn">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="sidebar-nav">
+    <a href="#" class="active">Maison</a>
+    <a href="scents.html">Scents</a>
+    <a href="bags.html">Bags</a>
+    <a href="#">Atelier</a>
+    <a href="search.html"><i class="fas fa-search"></i> Search</a>
+  </div>
+  <div class="sidebar-footer">
+    <div class="auth-section" id="sidebarAuth"></div>
+  </div>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
 <!-- NAVIGATION -->
 <nav id="navbar">
   <div class="nav-inner">
-    <a href="#" class="nav-logo">
-      DOLLARCHIC
-      <span class="logo-tagline">Maison de Luxe</span>
-    </a>
+    <div class="nav-left">
+      <a href="#" class="nav-logo">
+        DOLLARCHIC
+        <span class="logo-tagline">Maison de Luxe</span>
+      </a>
+      <button class="menu-toggle" id="menuToggleBtn">
+        <i class="fas fa-bars"></i> Menu
+      </button>
+    </div>
     <ul class="nav-links">
       <li><a href="#" class="active">Maison</a></li>
       <li><a href="scents.html">Scents</a></li>
@@ -847,7 +1021,7 @@ footer { background: var(--void); border-top: 1px solid rgba(212,168,48,0.08); p
     </ul>
     <div class="nav-actions">
       <div class="auth-indicator" id="authIndicator"></div>
-      <button class="nav-icon-btn" onclick="alert('Search coming soon')"><i class="fas fa-search"></i></button>
+      <button class="nav-icon-btn" onclick="location.href='search.html'"><i class="fas fa-search"></i></button>
       <button class="nav-icon-btn" id="cart-open-btn">
         <i class="fas fa-shopping-bag"></i>
         <span class="cart-badge" id="cartCount">0</span>
@@ -988,7 +1162,7 @@ footer { background: var(--void); border-top: 1px solid rgba(212,168,48,0.08); p
   </div>
 </section>
 
-<!-- COMING SOON — NEW HORIZONS -->
+<!-- COMING SOON -->
 <section class="horizon">
   <div class="horizon-inner">
     <div class="horizon-badge sr"><span>Arriving Soon</span></div>
@@ -997,22 +1171,10 @@ footer { background: var(--void); border-top: 1px solid rgba(212,168,48,0.08); p
       Home fragrances, silk accessories, and exclusive collaborations with the world's finest artisans.
     </p>
     <div class="horizon-items sr sr-delay-3">
-      <div class="horizon-item">
-        <div class="horizon-icon-wrap"><i class="fas fa-home"></i></div>
-        <span>Home Scents</span>
-      </div>
-      <div class="horizon-item">
-        <div class="horizon-icon-wrap"><i class="fas fa-gem"></i></div>
-        <span>Fine Jewelry</span>
-      </div>
-      <div class="horizon-item">
-        <div class="horizon-icon-wrap"><i class="fas fa-fan"></i></div>
-        <span>Silk Scarves</span>
-      </div>
-      <div class="horizon-item">
-        <div class="horizon-icon-wrap"><i class="fas fa-spa"></i></div>
-        <span>Body Rituals</span>
-      </div>
+      <div class="horizon-item"><div class="horizon-icon-wrap"><i class="fas fa-home"></i></div><span>Home Scents</span></div>
+      <div class="horizon-item"><div class="horizon-icon-wrap"><i class="fas fa-gem"></i></div><span>Fine Jewelry</span></div>
+      <div class="horizon-item"><div class="horizon-icon-wrap"><i class="fas fa-fan"></i></div><span>Silk Scarves</span></div>
+      <div class="horizon-item"><div class="horizon-icon-wrap"><i class="fas fa-spa"></i></div><span>Body Rituals</span></div>
     </div>
     <button class="btn-gold sr sr-delay-4" onclick="alert('You\'ll be first to know.')">
       Notify Me <i class="fas fa-bell"></i>
@@ -1023,19 +1185,11 @@ footer { background: var(--void); border-top: 1px solid rgba(212,168,48,0.08); p
 <!-- TESTIMONIAL -->
 <section class="testimonial-section">
   <div class="test-inner sr">
-    <div class="test-stars">
-      <i class="fas fa-star"></i><i class="fas fa-star"></i>
-      <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-    </div>
-    <p class="test-quote">
-      "The attention to detail is extraordinary — each piece feels as though it was conceived solely for me."
-    </p>
+    <div class="test-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+    <p class="test-quote">"The attention to detail is extraordinary — each piece feels as though it was conceived solely for me."</p>
     <div class="test-author">
       <img src="https://randomuser.me/api/portraits/women/44.jpg" class="test-avatar" alt="Sophia">
-      <div>
-        <div class="test-name">Sophia Chen</div>
-        <div class="test-role">Verified Patron · Dubai</div>
-      </div>
+      <div><div class="test-name">Sophia Chen</div><div class="test-role">Verified Patron · Dubai</div></div>
     </div>
   </div>
 </section>
@@ -1063,7 +1217,7 @@ footer { background: var(--void); border-top: 1px solid rgba(212,168,48,0.08); p
     <div class="footer-brand">
       <div class="footer-logo-text"><span>✦</span> DOLLARCHIC</div>
       <div class="footer-tagline">Maison de Luxe · Est. 2024</div>
-      <p>Luxury scents and handcrafted leather goods for the discerning connoisseur. Sourced from the world's finest ateliers.</p>
+      <p>Luxury scents and handcrafted leather goods for the discerning connoisseur.</p>
       <div class="social-row">
         <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
         <a href="#" class="social-btn"><i class="fab fa-twitter"></i></a>
@@ -1071,50 +1225,17 @@ footer { background: var(--void); border-top: 1px solid rgba(212,168,48,0.08); p
         <a href="#" class="social-btn"><i class="fab fa-tiktok"></i></a>
       </div>
     </div>
-    <div class="footer-col">
-      <h5>Shop</h5>
-      <ul>
-        <li><a href="scents.html">Fine Fragrances</a></li>
-        <li><a href="bags.html">Artisanal Bags</a></li>
-        <li><a href="#">Gift Sets</a></li>
-        <li><a href="#">Limited Editions</a></li>
-        <li><a href="#">New Arrivals</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <h5>Concierge</h5>
-      <ul>
-        <li><a href="#">Personal Shopping</a></li>
-        <li><a href="#">Shipping & Returns</a></li>
-        <li><a href="#">Authenticity</a></li>
-        <li><a href="#">Bespoke Orders</a></li>
-        <li><a href="#">Contact Us</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <h5>Maison</h5>
-      <ul>
-        <li><a href="#">Our Story</a></li>
-        <li><a href="#">Sustainability</a></li>
-        <li><a href="#">Press Room</a></li>
-        <li><a href="#">Collaborations</a></li>
-        <li><a href="#">Careers</a></li>
-      </ul>
-    </div>
+    <div class="footer-col"><h5>Shop</h5><ul><li><a href="scents.html">Fine Fragrances</a></li><li><a href="bags.html">Artisanal Bags</a></li><li><a href="#">Gift Sets</a></li><li><a href="#">Limited Editions</a></li></ul></div>
+    <div class="footer-col"><h5>Concierge</h5><ul><li><a href="#">Personal Shopping</a></li><li><a href="#">Shipping & Returns</a></li><li><a href="#">Authenticity</a></li><li><a href="#">Bespoke Orders</a></li><li><a href="#">Contact Us</a></li></ul></div>
+    <div class="footer-col"><h5>Maison</h5><ul><li><a href="#">Our Story</a></li><li><a href="#">Sustainability</a></li><li><a href="#">Press Room</a></li><li><a href="#">Collaborations</a></li><li><a href="#">Careers</a></li></ul></div>
   </div>
   <div class="footer-bottom">
     <p class="footer-copy">© 2024 Dollarchic's Store. All Rights Reserved.</p>
-    <div class="footer-pay">
-      <i class="fab fa-cc-visa"></i>
-      <i class="fab fa-cc-mastercard"></i>
-      <i class="fab fa-cc-amex"></i>
-      <i class="fab fa-cc-paypal"></i>
-      <i class="fab fa-cc-apple-pay"></i>
-    </div>
+    <div class="footer-pay"><i class="fab fa-cc-visa"></i><i class="fab fa-cc-mastercard"></i><i class="fab fa-cc-amex"></i><i class="fab fa-cc-paypal"></i><i class="fab fa-cc-apple-pay"></i></div>
   </div>
 </footer>
 
-<!-- CART SIDEBAR — IDs match cart.js exactly -->
+<!-- CART SIDEBAR -->
 <div class="cart-overlay" id="cartOverlay"></div>
 <div class="cart-sidebar" id="cartSidebar">
   <div class="cart-head">
@@ -1122,19 +1243,11 @@ footer { background: var(--void); border-top: 1px solid rgba(212,168,48,0.08); p
     <button class="cart-close-btn" id="closeCart"><i class="fas fa-times"></i></button>
   </div>
   <div class="cart-body" id="cartItems">
-    <div class="cart-empty">
-      <i class="fas fa-shopping-bag"></i>
-      <p>Your bag is empty</p>
-    </div>
+    <div class="cart-empty"><i class="fas fa-shopping-bag"></i><p>Your bag is empty</p></div>
   </div>
   <div class="cart-foot">
-    <div class="cart-subtotal-row">
-      <span>Subtotal</span>
-      <span id="cartTotal">$0.00</span>
-    </div>
-    <button class="btn-gold" style="width:100%;justify-content:center" onclick="location.href='checkout.html'">
-      Proceed to Checkout <i class="fas fa-arrow-right"></i>
-    </button>
+    <div class="cart-subtotal-row"><span>Subtotal</span><span id="cartTotal">$0.00</span></div>
+    <button class="btn-gold" style="width:100%;justify-content:center" onclick="location.href='checkout.html'">Proceed to Checkout <i class="fas fa-arrow-right"></i></button>
   </div>
 </div>
 
@@ -1264,6 +1377,28 @@ window.addEventListener('scroll', () => {
   document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
 });
 
+/* ═══════════ MOBILE SIDEBAR ═══════════ */
+const mobileSidebar = document.getElementById('mobileSidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+const menuToggleBtn = document.getElementById('menuToggleBtn');
+const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+
+function openSidebar() {
+  mobileSidebar.classList.add('open');
+  sidebarOverlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSidebar() {
+  mobileSidebar.classList.remove('open');
+  sidebarOverlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+menuToggleBtn?.addEventListener('click', openSidebar);
+closeSidebarBtn?.addEventListener('click', closeSidebar);
+sidebarOverlay?.addEventListener('click', closeSidebar);
+
 /* ═══════════ TICKER ═══════════ */
 const tickerItems = [
   'Fine Fragrances', 'Artisanal Leather', 'Bespoke Orders', 'Italian Ateliers',
@@ -1277,34 +1412,37 @@ const ticker = document.getElementById('ticker');
   ticker.appendChild(div);
 });
 
-/* ═══════════ AUTHENTICATION STATE ═══════════ */
+/* ═══════════ AUTHENTICATION STATE ─── PROFILE AVATAR ═══════════ */
 let currentUser = null;
 let isAuthenticated = false;
 
 function updateAuthUI() {
   const authContainer = document.getElementById('authIndicator');
+  const sidebarAuth = document.getElementById('sidebarAuth');
   if (!authContainer) return;
 
   if (isAuthenticated && currentUser) {
     const firstName = currentUser.user?.user_metadata?.first_name ||
                      currentUser.user?.email?.split('@')[0] ||
                      'Member';
-    authContainer.innerHTML = `
-      <div class="verified-badge" id="userMenuBtn">
-        <i class="fas fa-check-circle"></i>
-        <span>${firstName}</span>
-      </div>
+    const authHTML = `
+      <a href="profile.html" class="profile-avatar-btn">
+        <div class="avatar-circle"><i class="fas fa-user"></i></div>
+        <span class="avatar-text">${firstName}</span>
+      </a>
       <button class="logout-btn" id="logoutBtn">
         <i class="fas fa-sign-out-alt"></i>
         <span>Exit</span>
       </button>`;
+    authContainer.innerHTML = authHTML;
+    if (sidebarAuth) sidebarAuth.innerHTML = authHTML;
+    
     document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
   } else {
-    authContainer.innerHTML = `
-      <button class="login-btn" id="loginBtn">
-        <i class="fas fa-user"></i>
-        <span>Sign In</span>
-      </button>`;
+    const loginHTML = `<button class="login-btn" id="loginBtn"><i class="fas fa-user"></i><span>Sign In</span></button>`;
+    authContainer.innerHTML = loginHTML;
+    if (sidebarAuth) sidebarAuth.innerHTML = loginHTML;
+    
     document.getElementById('loginBtn')?.addEventListener('click', () => {
       window.location.href = 'login.html';
     });
@@ -1401,7 +1539,6 @@ document.querySelectorAll('.prod-action').forEach(btn => {
       if (typeof window.addToCart === 'function') {
         await window.addToCart(product);
       } else {
-        // Wait briefly for cart.js to initialise, then retry once
         await new Promise(r => setTimeout(r, 800));
         if (typeof window.addToCart === 'function') {
           await window.addToCart(product);

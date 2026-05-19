@@ -22,17 +22,18 @@
     <link rel="stylesheet" href="css/style.css">
     
     <style>
+        /* Override any conflicting styles for bags page - matching scents.html exactly */
         .products-section {
             padding: 4rem 0 !important;
             background: var(--alabaster) !important;
         }
-
+        
         .products-grid {
             display: grid !important;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
             gap: 2rem !important;
         }
-
+        
         .product-card {
             background: white !important;
             border-radius: 20px !important;
@@ -42,30 +43,30 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
             position: relative !important;
         }
-
+        
         .product-card:hover {
             transform: translateY(-10px) !important;
             box-shadow: 0 32px 48px -20px rgba(0,0,0,0.25) !important;
         }
-
+        
         .product-image {
             position: relative !important;
             aspect-ratio: 1 !important;
             overflow: hidden !important;
             background: linear-gradient(135deg, #f5f0e8 0%, #e8e0d5 100%) !important;
         }
-
+        
         .product-image img {
             width: 100% !important;
             height: 100% !important;
             object-fit: cover !important;
             transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1) !important;
         }
-
+        
         .product-card:hover .product-image img {
             transform: scale(1.08) !important;
         }
-
+        
         .product-overlay {
             position: absolute !important;
             bottom: 0 !important;
@@ -78,11 +79,11 @@
             display: flex !important;
             justify-content: center !important;
         }
-
+        
         .product-card:hover .product-overlay {
             opacity: 1 !important;
         }
-
+        
         .quick-add-btn {
             background: var(--gold-pure) !important;
             color: var(--obs-deep) !important;
@@ -98,15 +99,13 @@
             transition: all 0.3s ease !important;
             transform: translateY(20px) !important;
             opacity: 0 !important;
-            position: relative !important;
-            overflow: hidden !important;
         }
-
+        
         .quick-add-btn.loading {
             pointer-events: none !important;
             opacity: 0.7 !important;
         }
-
+        
         .quick-add-btn.loading::after {
             content: '' !important;
             position: absolute !important;
@@ -120,34 +119,34 @@
             border-radius: 50% !important;
             animation: spin 0.6s linear infinite !important;
         }
-
+        
         .quick-add-btn i {
             transition: opacity 0.2s ease !important;
         }
-
+        
         .quick-add-btn.loading i {
             opacity: 0 !important;
         }
-
+        
         .quick-add-btn.loading span {
             opacity: 0.5 !important;
         }
-
+        
         .product-card:hover .quick-add-btn {
             transform: translateY(0) !important;
             opacity: 1 !important;
         }
-
+        
         .quick-add-btn:hover {
             background: var(--gold-bright) !important;
             transform: translateY(-2px) !important;
         }
-
+        
         .product-info {
             padding: 1.25rem !important;
             text-align: center !important;
         }
-
+        
         .product-name {
             font-family: var(--font-display) !important;
             font-size: 1.1rem !important;
@@ -156,7 +155,7 @@
             margin-bottom: 0.35rem !important;
             letter-spacing: -0.01em !important;
         }
-
+        
         .product-price {
             font-family: var(--font-sans) !important;
             font-size: 0.85rem !important;
@@ -164,7 +163,7 @@
             color: var(--gold-molten) !important;
             letter-spacing: 0.08em !important;
         }
-
+        
         .product-material {
             font-size: 0.65rem !important;
             letter-spacing: 0.1em !important;
@@ -172,7 +171,7 @@
             margin-top: 0.25rem !important;
             text-transform: uppercase !important;
         }
-
+        
         .product-badge {
             position: absolute;
             top: 1rem;
@@ -187,30 +186,59 @@
             text-transform: uppercase;
             z-index: 2;
         }
-
+        
+        /* Auth Indicator - Profile Avatar Styles (matching scents.html) */
         .auth-indicator {
             display: flex;
             align-items: center;
             gap: 0.5rem;
             margin-right: 0.5rem;
         }
-
-        .verified-badge {
+        
+        /* Profile Avatar Button */
+        .profile-avatar-btn {
             display: flex;
             align-items: center;
-            gap: 0.4rem;
-            background: rgba(42, 138, 92, 0.15);
-            padding: 0.4rem 0.8rem;
+            justify-content: center;
+            gap: 0.5rem;
+            background: rgba(212,168,48,0.1);
+            border: 1px solid rgba(212,168,48,0.3);
             border-radius: 40px;
-            border: 1px solid rgba(42, 138, 92, 0.3);
+            padding: 0.3rem 0.8rem 0.3rem 0.5rem;
             cursor: pointer;
             transition: all 0.3s ease;
+            text-decoration: none;
         }
-
-        .verified-badge:hover { background: rgba(42, 138, 92, 0.25); transform: translateY(-1px); }
-        .verified-badge i { color: #2a8a5c; font-size: 0.8rem; }
-        .verified-badge span { font-family: var(--font-sans); font-size: 0.65rem; font-weight: 400; color: #2a8a5c; letter-spacing: 0.05em; }
-
+        
+        .profile-avatar-btn:hover {
+            background: rgba(212,168,48,0.2);
+            transform: translateY(-2px);
+            border-color: rgba(212,168,48,0.6);
+        }
+        
+        .avatar-circle {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--gold-molten), var(--gold-pure));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .avatar-circle i {
+            font-size: 0.9rem;
+            color: var(--obs-deep);
+        }
+        
+        .avatar-text {
+            font-family: var(--font-sans);
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--gold-champagne);
+            letter-spacing: 0.05em;
+        }
+        
         .logout-btn {
             background: none;
             border: 1px solid rgba(212,168,48,0.3);
@@ -225,9 +253,13 @@
             gap: 0.4rem;
             font-family: var(--font-sans);
         }
-
-        .logout-btn:hover { border-color: rgba(212,168,48,0.8); color: var(--gold-3); transform: translateY(-1px); }
-
+        
+        .logout-btn:hover {
+            border-color: rgba(212,168,48,0.8);
+            color: var(--gold-3);
+            transform: translateY(-1px);
+        }
+        
         .login-btn {
             background: var(--gold-molten);
             border: none;
@@ -244,11 +276,234 @@
             gap: 0.4rem;
             font-family: var(--font-sans);
         }
-
-        .login-btn:hover { background: var(--gold-pure); transform: translateY(-1px); }
-
-        .loading-state { text-align: center; padding: 4rem; }
-
+        
+        .login-btn:hover {
+            background: var(--gold-pure);
+            transform: translateY(-1px);
+        }
+        
+        /* Mobile Sidebar Styles (matching scents.html) */
+        .mobile-sidebar {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 85%;
+            max-width: 350px;
+            height: 100vh;
+            background: var(--obs-void);
+            z-index: 10000;
+            transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(212,168,48,0.1);
+        }
+        
+        .mobile-sidebar.open {
+            left: 0;
+        }
+        
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid rgba(212,168,48,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .sidebar-header h3 {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            font-weight: 400;
+            color: var(--gold-3);
+        }
+        
+        .close-sidebar {
+            background: none;
+            border: none;
+            color: rgba(248,244,237,0.5);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .close-sidebar:hover {
+            color: var(--gold-3);
+            background: rgba(212,168,48,0.1);
+            transform: rotate(90deg);
+        }
+        
+        .sidebar-nav {
+            flex: 1;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .sidebar-nav a {
+            font-family: var(--font-display);
+            font-size: 0.9rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: rgba(248,244,237,0.7);
+            text-decoration: none;
+            padding: 0.5rem 0;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(212,168,48,0.05);
+        }
+        
+        .sidebar-nav a:hover {
+            color: var(--gold-3);
+            padding-left: 0.5rem;
+            border-bottom-color: rgba(212,168,48,0.2);
+        }
+        
+        .sidebar-nav a.active {
+            color: var(--gold-3);
+        }
+        
+        .sidebar-footer {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(212,168,48,0.1);
+        }
+        
+        .sidebar-footer .auth-section {
+            margin-bottom: 1rem;
+        }
+        
+        .sidebar-footer .auth-section .login-btn,
+        .sidebar-footer .auth-section .profile-avatar-btn,
+        .sidebar-footer .auth-section .logout-btn {
+            width: 100%;
+            justify-content: center;
+            padding: 0.8rem;
+        }
+        
+        .sidebar-footer .auth-section .profile-avatar-btn {
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Left section with logo and hamburger (matching scents.html) */
+        .nav-left {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.25rem;
+        }
+        
+        .nav-logo {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .logo-icon { color: var(--gold-pure); margin-right: 0.25rem; }
+        .logo-sub { display: block; font-size: 0.6rem; letter-spacing: 0.2em; text-align: right; color: var(--gold-light); }
+        
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: color 0.3s;
+            display: none;
+            padding: 0;
+            margin-top: 0.2rem;
+        }
+        
+        .menu-toggle:hover { color: var(--gold-pure); }
+        
+        .nav-menu { display: flex; gap: 2.5rem; }
+        
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--gold-pure);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after,
+        .nav-link.active::after { width: 100%; }
+        
+        .nav-icons {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .icon-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+        
+        .icon-btn:hover { color: var(--gold-pure); }
+        
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -12px;
+            background: var(--gold-pure);
+            color: var(--obs-deep);
+            font-size: 0.7rem;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .loading-state {
+            text-align: center;
+            padding: 4rem;
+        }
+        
         .loading-spinner {
             width: 50px;
             height: 50px;
@@ -258,18 +513,33 @@
             animation: spin 1s linear infinite;
             margin: 0 auto 1rem;
         }
-
-        .empty-state { text-align: center; padding: 4rem; color: var(--ash); }
-        .empty-state i { font-size: 3rem; color: var(--alabaster-fog); margin-bottom: 1rem; display: block; }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem;
+            color: var(--ash);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--alabaster-fog);
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
         @media (max-width: 768px) {
-            .auth-indicator { gap: 0.3rem; }
-            .verified-badge span { display: none; }
-            .verified-badge { padding: 0.4rem; }
+            .nav-menu { display: none; }
+            .menu-toggle { display: flex; align-items: center; gap: 0.5rem; }
+            .nav-left { flex-direction: column; align-items: flex-start; }
+            .auth-indicator .avatar-text { display: none; }
+            .profile-avatar-btn { padding: 0.4rem; }
             .logout-btn span { display: none; }
             .logout-btn { padding: 0.4rem; }
+            .nav-icons { gap: 1rem; }
         }
     </style>
 </head>
@@ -287,6 +557,26 @@
         <div class="light-ray"></div><div class="light-ray"></div><div class="light-ray"></div>
     </div>
 
+    <!-- Mobile Sidebar -->
+    <div class="mobile-sidebar" id="mobileSidebar">
+        <div class="sidebar-header">
+            <h3>MENU</h3>
+            <button class="close-sidebar" id="closeSidebarBtn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="sidebar-nav">
+            <a href="index.html">Home</a>
+            <a href="scents.html">Scents</a>
+            <a href="bags.html" class="active">Bags</a>
+            <a href="search.html"><i class="fas fa-search"></i> Search</a>
+        </div>
+        <div class="sidebar-footer">
+            <div class="auth-section" id="sidebarAuth"></div>
+        </div>
+    </div>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <!-- Custom Cursor -->
     <div class="cursor-dot"></div>
     <div class="cursor-outline"></div>
@@ -302,8 +592,14 @@
     <!-- Navigation -->
     <nav class="navbar" id="navbar">
         <div class="nav-container">
-            <div class="nav-logo">
-                <a href="index.html"><span class="logo-icon">✦</span> DOLLARCHIC<span class="logo-sub">STORE</span></a>
+            <div class="nav-left">
+                <a href="index.html" class="nav-logo">
+                    <span class="logo-icon">✦</span> DOLLARCHIC
+                    <span class="logo-sub">STORE</span>
+                </a>
+                <button class="menu-toggle" id="menuToggleBtn">
+                    <i class="fas fa-bars"></i> Menu
+                </button>
             </div>
             <div class="nav-menu" id="navMenu">
                 <a href="index.html" class="nav-link">Home</a>
@@ -311,10 +607,11 @@
                 <a href="bags.html" class="nav-link active">Bags</a>
             </div>
             <div class="nav-icons">
-                <button class="icon-btn search-toggle" onclick="alert('Search coming soon!');"><i class="fas fa-search"></i></button>
+                <button class="icon-btn search-toggle" onclick="location.href='search.html'">
+                    <i class="fas fa-search"></i>
+                </button>
                 <div class="auth-indicator" id="authIndicator"></div>
                 <button class="icon-btn cart-btn" id="cartBtn"><i class="fas fa-shopping-bag"></i><span class="cart-count" id="cartCount">0</span></button>
-                <button class="icon-btn menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
             </div>
         </div>
     </nav>
@@ -458,7 +755,7 @@
         let currentSort = 'featured';
 
         // ============================================
-        // LOADER — hides after products load, not on window.load
+        // LOADER
         // ============================================
 
         function hideLoader() {
@@ -468,7 +765,6 @@
             setTimeout(() => { loader.style.display = 'none'; }, 600);
         }
 
-        // Safety fallback: force-hide after 8s no matter what
         const loaderFallback = setTimeout(hideLoader, 8000);
 
         // ============================================
@@ -481,7 +777,6 @@
             try {
                 console.log('Loading bags from Supabase...');
 
-                // Wait for Supabase to be ready (up to 3s)
                 let supabaseReady = false;
                 for (let i = 0; i < 30; i++) {
                     if (window.dollarchicSupabase && window.dollarchicProducts) {
@@ -493,7 +788,6 @@
 
                 if (!supabaseReady) {
                     console.error('Supabase not ready');
-                    container.style.display = 'block';
                     container.innerHTML = `
                         <div class="empty-state">
                             <i class="fas fa-exclamation-triangle"></i>
@@ -504,8 +798,6 @@
                 }
 
                 console.log('Supabase ready, fetching bags...');
-
-                // Get bags from Supabase
                 const result = await window.dollarchicProducts.getBags();
                 console.log('Result:', result);
 
@@ -520,12 +812,11 @@
                         badge: product.badge || null
                     }));
 
-                    console.log('Mapped bags:', bagsProducts);
+                    console.log('Mapped bags:', bagsProducts.length);
                     container.innerHTML = '';
                     renderProducts();
                 } else {
                     console.warn('No bags found');
-                    container.style.display = 'block';
                     container.innerHTML = `
                         <div class="empty-state">
                             <i class="fas fa-shopping-bag"></i>
@@ -536,7 +827,6 @@
 
             } catch (error) {
                 console.error('Error loading bags:', error);
-                container.style.display = 'block';
                 container.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-exclamation-triangle"></i>
@@ -545,7 +835,6 @@
                         <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1.5rem; background: #d4a830; border: none; border-radius: 30px; cursor: pointer;">Refresh</button>
                     </div>`;
             } finally {
-                // Always hide loader — success, empty, or error
                 clearTimeout(loaderFallback);
                 hideLoader();
             }
@@ -579,7 +868,6 @@
                 return;
             }
 
-            // Set grid directly on container — no inner wrapper
             container.style.display = 'grid';
             container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(300px, 1fr))';
             container.style.gap = '2rem';
@@ -590,10 +878,10 @@
                     <div class="product-card" data-id="${product.id}">
                         <div class="product-image">
                             <img src="${product.image}" alt="${escapeHtml(product.name)}" loading="lazy">
-                            ${product.badge ? `<span class="product-badge">${product.badge}</span>` : ''}
+                            ${product.badge ? `<span class="product-badge">${escapeHtml(product.badge)}</span>` : ''}
                             <div class="product-overlay">
-                                <button class="quick-add-btn" onclick="event.stopPropagation(); addToCartFunction(event, ${product.id})">
-                                    <i class="fas fa-shopping-bag"></i> <span>Add to Bag</span>
+                                <button class="quick-add-btn" onclick="event.stopPropagation(); addToCartFunction(${product.id})">
+                                    <i class="fas fa-shopping-bag"></i> Add to Bag
                                 </button>
                             </div>
                         </div>
@@ -642,25 +930,22 @@
         }
 
         // ============================================
-        // ADD TO CART WITH LOADING STATE
+        // ADD TO CART
         // ============================================
 
-        async function addToCartFunction(event, productId) {
-            const button = event.currentTarget;
+        async function addToCartFunction(productId) {
             const product = bagsProducts.find(p => p.id === productId);
             if (!product) return;
             
-            // Prevent multiple clicks
-            if (button.classList.contains('loading')) return;
+            const button = document.querySelector(`.product-card[data-id="${productId}"] .quick-add-btn`);
+            if (button && button.classList.contains('loading')) return;
             
-            // Add loading state
-            button.classList.add('loading');
-            button.disabled = true;
+            if (button) button.classList.add('loading');
             
             try {
-                // Check if cart.js is loaded and has the function
                 if (typeof window.addToCart === 'function') {
                     await window.addToCart(product);
+                    showNotification(`${product.name} added to bag`);
                 } else {
                     console.error('Cart.js not loaded properly');
                     showNotification('Cart system loading... Please try again');
@@ -669,22 +954,11 @@
                 console.error('Error adding to cart:', error);
                 showNotification('Failed to add to bag. Please try again.');
             } finally {
-                // Remove loading state after a short delay
-                setTimeout(() => {
-                    button.classList.remove('loading');
-                    button.disabled = false;
-                    
-                    // Reset transform if not hovering
-                    const parentCard = button.closest('.product-card');
-                    const isHovering = parentCard?.matches(':hover');
-                    if (!isHovering) {
-                        button.style.transform = 'translateY(20px)';
-                        button.style.opacity = '0';
-                    } else {
-                        button.style.transform = 'translateY(0)';
-                        button.style.opacity = '1';
-                    }
-                }, 500);
+                if (button) {
+                    setTimeout(() => {
+                        button.classList.remove('loading');
+                    }, 500);
+                }
             }
         }
 
@@ -699,6 +973,8 @@
                 setTimeout(() => notification.remove(), 300);
             }, 3000);
         }
+
+        window.addToCartFunction = addToCartFunction;
 
         // ============================================
         // FILTERS & SORT
@@ -726,19 +1002,24 @@
         }
 
         // ============================================
-        // AUTH
+        // AUTH - PROFILE AVATAR STYLE (matching scents.html)
         // ============================================
 
         async function checkAuthStatus() {
             if (typeof window.dollarchicAuth !== 'undefined') {
                 try {
                     const result = await window.dollarchicAuth.getCurrentUser();
-                    if (result.success && result.isAuthenticated) {
+                    if (result.success && result.isAuthenticated && result.user) {
                         isAuthenticated = true;
                         currentUser = result.user;
+                    } else {
+                        isAuthenticated = false;
+                        currentUser = null;
                     }
                 } catch (e) {
                     console.log('Auth error:', e);
+                    isAuthenticated = false;
+                    currentUser = null;
                 }
                 updateAuthUI();
             }
@@ -746,17 +1027,35 @@
 
         function updateAuthUI() {
             const container = document.getElementById('authIndicator');
+            const sidebarAuth = document.getElementById('sidebarAuth');
             if (!container) return;
 
             if (isAuthenticated && currentUser) {
-                const firstName = currentUser.user?.user_metadata?.first_name ||
-                                  currentUser.user?.email?.split('@')[0] || 'Member';
-                container.innerHTML = `
-                    <div class="verified-badge"><i class="fas fa-check-circle"></i><span>${firstName}</span></div>
-                    <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Exit</span></button>`;
+                const firstName = currentUser.user_metadata?.first_name || 
+                                  currentUser.email?.split('@')[0] || 
+                                  'Member';
+                
+                const authHTML = `
+                    <a href="profile.html" class="profile-avatar-btn">
+                        <div class="avatar-circle">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span class="avatar-text">${escapeHtml(firstName)}</span>
+                    </a>
+                    <button class="logout-btn" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Exit</span>
+                    </button>
+                `;
+                container.innerHTML = authHTML;
+                if (sidebarAuth) sidebarAuth.innerHTML = authHTML;
+                
                 document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
             } else {
-                container.innerHTML = `<button class="login-btn" id="loginBtn"><i class="fas fa-user"></i><span>Sign In</span></button>`;
+                const loginHTML = `<button class="login-btn" id="loginBtn"><i class="fas fa-user"></i><span>Sign In</span></button>`;
+                container.innerHTML = loginHTML;
+                if (sidebarAuth) sidebarAuth.innerHTML = loginHTML;
+                
                 document.getElementById('loginBtn')?.addEventListener('click', () => {
                     window.location.href = 'login.html';
                 });
@@ -774,6 +1073,33 @@
                     setTimeout(() => window.location.reload(), 1000);
                 }
             }
+        }
+
+        // ============================================
+        // MOBILE SIDEBAR (matching scents.html)
+        // ============================================
+
+        function initMobileSidebar() {
+            const mobileSidebar = document.getElementById('mobileSidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const menuToggleBtn = document.getElementById('menuToggleBtn');
+            const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+
+            function openSidebar() {
+                mobileSidebar.classList.add('open');
+                sidebarOverlay.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeSidebar() {
+                mobileSidebar.classList.remove('open');
+                sidebarOverlay.classList.remove('open');
+                document.body.style.overflow = '';
+            }
+
+            menuToggleBtn?.addEventListener('click', openSidebar);
+            closeSidebarBtn?.addEventListener('click', closeSidebar);
+            sidebarOverlay?.addEventListener('click', closeSidebar);
         }
 
         // ============================================
@@ -801,12 +1127,6 @@
             cartOverlay?.addEventListener('click', closeCartFn);
         }
 
-        function initMobileMenu() {
-            const menuToggle = document.getElementById('menuToggle');
-            const navMenu = document.getElementById('navMenu');
-            menuToggle?.addEventListener('click', () => navMenu.classList.toggle('open'));
-        }
-
         function initCustomCursor() {
             const dot = document.querySelector('.cursor-dot');
             const ring = document.querySelector('.cursor-outline');
@@ -823,20 +1143,17 @@
             });
         }
 
-        // Make functions global
-        window.addToCartFunction = addToCartFunction;
-
         // ============================================
-        // BOOT — loader hides inside loadProducts() via finally{}
+        // BOOT
         // ============================================
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log('DOM loaded, starting bags...');
+            console.log('DOM loaded, starting bags page...');
             initNavScroll();
             initCartSidebar();
-            initMobileMenu();
+            initMobileSidebar();
             initCustomCursor();
             initFilters();
-            await loadProducts();       // hideLoader() fires here in finally{}
+            await loadProducts();
             await checkAuthStatus();
         });
     </script>

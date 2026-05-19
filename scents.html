@@ -228,6 +228,223 @@
             transform: translateY(-1px);
         }
         
+        /* Mobile Sidebar Styles */
+        .mobile-sidebar {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 85%;
+            max-width: 350px;
+            height: 100vh;
+            background: var(--obs-void);
+            z-index: 10000;
+            transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(212,168,48,0.1);
+        }
+        
+        .mobile-sidebar.open {
+            left: 0;
+        }
+        
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid rgba(212,168,48,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .sidebar-header h3 {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            font-weight: 400;
+            color: var(--gold-3);
+        }
+        
+        .close-sidebar {
+            background: none;
+            border: none;
+            color: rgba(248,244,237,0.5);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .close-sidebar:hover {
+            color: var(--gold-3);
+            background: rgba(212,168,48,0.1);
+            transform: rotate(90deg);
+        }
+        
+        .sidebar-nav {
+            flex: 1;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .sidebar-nav a {
+            font-family: var(--font-display);
+            font-size: 0.9rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: rgba(248,244,237,0.7);
+            text-decoration: none;
+            padding: 0.5rem 0;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(212,168,48,0.05);
+        }
+        
+        .sidebar-nav a:hover {
+            color: var(--gold-3);
+            padding-left: 0.5rem;
+            border-bottom-color: rgba(212,168,48,0.2);
+        }
+        
+        .sidebar-nav a.active {
+            color: var(--gold-3);
+        }
+        
+        .sidebar-footer {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(212,168,48,0.1);
+        }
+        
+        .sidebar-footer .auth-section {
+            margin-bottom: 1rem;
+        }
+        
+        .sidebar-footer .auth-section .login-btn,
+        .sidebar-footer .auth-section .profile-avatar-btn,
+        .sidebar-footer .auth-section .logout-btn {
+            width: 100%;
+            justify-content: center;
+            padding: 0.8rem;
+        }
+        
+        .sidebar-footer .auth-section .profile-avatar-btn {
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Left section with logo and hamburger */
+        .nav-left {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.25rem;
+        }
+        
+        .nav-logo {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .logo-icon { color: var(--gold-pure); margin-right: 0.25rem; }
+        .logo-sub { display: block; font-size: 0.6rem; letter-spacing: 0.2em; text-align: right; color: var(--gold-light); }
+        
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: color 0.3s;
+            display: none;
+            padding: 0;
+            margin-top: 0.2rem;
+        }
+        
+        .menu-toggle:hover { color: var(--gold-pure); }
+        
+        .nav-menu { display: flex; gap: 2.5rem; }
+        
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--gold-pure);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after,
+        .nav-link.active::after { width: 100%; }
+        
+        .nav-icons {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .icon-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+        
+        .icon-btn:hover { color: var(--gold-pure); }
+        
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -12px;
+            background: var(--gold-pure);
+            color: var(--obs-deep);
+            font-size: 0.7rem;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
         .loading-state {
             text-align: center;
             padding: 4rem;
@@ -275,11 +492,14 @@
         }
         
         @media (max-width: 768px) {
-            .auth-indicator { gap: 0.3rem; }
-            .avatar-text { display: none; }
-            .profile-avatar-btn { padding: 0.3rem; }
+            .nav-menu { display: none; }
+            .menu-toggle { display: flex; align-items: center; gap: 0.5rem; }
+            .nav-left { flex-direction: column; align-items: flex-start; }
+            .auth-indicator .avatar-text { display: none; }
+            .profile-avatar-btn { padding: 0.4rem; }
             .logout-btn span { display: none; }
             .logout-btn { padding: 0.4rem; }
+            .nav-icons { gap: 1rem; }
         }
     </style>
 </head>
@@ -297,6 +517,26 @@
         <div class="light-ray"></div><div class="light-ray"></div><div class="light-ray"></div>
     </div>
 
+    <!-- Mobile Sidebar -->
+    <div class="mobile-sidebar" id="mobileSidebar">
+        <div class="sidebar-header">
+            <h3>MENU</h3>
+            <button class="close-sidebar" id="closeSidebarBtn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="sidebar-nav">
+            <a href="index.html">Home</a>
+            <a href="scents.html" class="active">Scents</a>
+            <a href="bags.html">Bags</a>
+            <a href="search.html"><i class="fas fa-search"></i> Search</a>
+        </div>
+        <div class="sidebar-footer">
+            <div class="auth-section" id="sidebarAuth"></div>
+        </div>
+    </div>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <!-- Custom Cursor -->
     <div class="cursor-dot"></div>
     <div class="cursor-outline"></div>
@@ -312,8 +552,14 @@
     <!-- Navigation -->
     <nav class="navbar" id="navbar">
         <div class="nav-container">
-            <div class="nav-logo">
-                <a href="index.html"><span class="logo-icon">✦</span> DOLLARCHIC<span class="logo-sub">STORE</span></a>
+            <div class="nav-left">
+                <a href="index.html" class="nav-logo">
+                    <span class="logo-icon">✦</span> DOLLARCHIC
+                    <span class="logo-sub">STORE</span>
+                </a>
+                <button class="menu-toggle" id="menuToggleBtn">
+                    <i class="fas fa-bars"></i> Menu
+                </button>
             </div>
             <div class="nav-menu" id="navMenu">
                 <a href="index.html" class="nav-link">Home</a>
@@ -326,7 +572,6 @@
                 </button>
                 <div class="auth-indicator" id="authIndicator"></div>
                 <button class="icon-btn cart-btn" id="cartBtn"><i class="fas fa-shopping-bag"></i><span class="cart-count" id="cartCount">0</span></button>
-                <button class="icon-btn menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
             </div>
         </div>
     </nav>
@@ -553,7 +798,6 @@
                         <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1.5rem; background: #d4a830; border: none; border-radius: 30px; cursor: pointer;">Refresh</button>
                     </div>`;
             } finally {
-                // Always hide the loader once we're done — success, empty, or error
                 clearTimeout(loaderFallback);
                 hideLoader();
             }
@@ -589,7 +833,6 @@
                 return;
             }
 
-            // Set grid styles directly on the container — no inner wrapper
             container.style.display = 'grid';
             container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(300px, 1fr))';
             container.style.gap = '2rem';
@@ -649,7 +892,6 @@
             const product = scentsProducts.find(p => p.id === productId);
             if (!product) return;
             
-            // Check if cart.js is loaded and has the function
             if (typeof window.addToCart === 'function') {
                 await window.addToCart(product);
             } else {
@@ -658,7 +900,6 @@
             }
         }
 
-        // Make it available globally
         window.addToCartFunction = addToCartFunction;
         
         function showNotification(message) {
@@ -724,17 +965,16 @@
 
         function updateAuthUI() {
             const container = document.getElementById('authIndicator');
+            const sidebarAuth = document.getElementById('sidebarAuth');
             if (!container) return;
 
             if (isAuthenticated && currentUser) {
-                // Get user's first name or email prefix
                 const firstName = currentUser.user_metadata?.first_name || 
                                   currentUser.email?.split('@')[0] || 
                                   'Member';
-                const initial = firstName.charAt(0).toUpperCase();
                 
-                container.innerHTML = `
-                    <a href="profile.html" class="profile-avatar-btn" id="profileBtn">
+                const authHTML = `
+                    <a href="profile.html" class="profile-avatar-btn">
                         <div class="avatar-circle">
                             <i class="fas fa-user"></i>
                         </div>
@@ -745,16 +985,15 @@
                         <span>Exit</span>
                     </button>
                 `;
+                container.innerHTML = authHTML;
+                if (sidebarAuth) sidebarAuth.innerHTML = authHTML;
                 
-                // Add logout handler
                 document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
             } else {
-                container.innerHTML = `
-                    <button class="login-btn" id="loginBtn">
-                        <i class="fas fa-user"></i>
-                        <span>Sign In</span>
-                    </button>
-                `;
+                const loginHTML = `<button class="login-btn" id="loginBtn"><i class="fas fa-user"></i><span>Sign In</span></button>`;
+                container.innerHTML = loginHTML;
+                if (sidebarAuth) sidebarAuth.innerHTML = loginHTML;
+                
                 document.getElementById('loginBtn')?.addEventListener('click', () => {
                     window.location.href = 'login.html';
                 });
@@ -772,6 +1011,33 @@
                     setTimeout(() => window.location.reload(), 1000);
                 }
             }
+        }
+
+        // ============================================
+        // MOBILE SIDEBAR
+        // ============================================
+
+        function initMobileSidebar() {
+            const mobileSidebar = document.getElementById('mobileSidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const menuToggleBtn = document.getElementById('menuToggleBtn');
+            const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+
+            function openSidebar() {
+                mobileSidebar.classList.add('open');
+                sidebarOverlay.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeSidebar() {
+                mobileSidebar.classList.remove('open');
+                sidebarOverlay.classList.remove('open');
+                document.body.style.overflow = '';
+            }
+
+            menuToggleBtn?.addEventListener('click', openSidebar);
+            closeSidebarBtn?.addEventListener('click', closeSidebar);
+            sidebarOverlay?.addEventListener('click', closeSidebar);
         }
 
         // ============================================
@@ -799,12 +1065,6 @@
             cartOverlay?.addEventListener('click', closeCartFn);
         }
 
-        function initMobileMenu() {
-            const menuToggle = document.getElementById('menuToggle');
-            const navMenu = document.getElementById('navMenu');
-            menuToggle?.addEventListener('click', () => navMenu.classList.toggle('open'));
-        }
-
         function initCustomCursor() {
             const dot = document.querySelector('.cursor-dot');
             const ring = document.querySelector('.cursor-outline');
@@ -828,10 +1088,10 @@
             console.log('DOM loaded, starting...');
             initNavScroll();
             initCartSidebar();
-            initMobileMenu();
+            initMobileSidebar();
             initCustomCursor();
             initFilters();
-            await loadProducts();        // hideLoader() fires here in finally{}
+            await loadProducts();
             await checkAuthStatus();
         });
     </script>
