@@ -39,6 +39,12 @@
             padding: 0;
             box-sizing: border-box;
         }
+
+        html, body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
         
         body {
             font-family: var(--sans);
@@ -46,7 +52,6 @@
             background: var(--void);
             color: var(--bone);
             min-height: 100vh;
-            overflow-x: hidden;
         }
         
         /* Ambient Canvas */
@@ -112,6 +117,7 @@
             padding: 8rem 2rem 4rem;
             position: relative;
             z-index: 1;
+            width: 100%;
         }
         
         /* Profile Header */
@@ -131,14 +137,15 @@
             font-size: 0.8rem;
         }
         
-        /* Profile Grid - Balanced Layout */
+        /* Profile Grid */
         .profile-grid {
             display: grid;
             grid-template-columns: 320px 1fr;
             gap: 2rem;
+            width: 100%;
         }
         
-        /* Profile Sidebar - Styled like Order Summary */
+        /* Profile Sidebar */
         .profile-sidebar {
             background: rgba(8,9,14,0.65);
             backdrop-filter: blur(20px);
@@ -160,6 +167,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
         
         .profile-avatar i {
@@ -230,13 +238,16 @@
             transform: translateY(-2px);
         }
         
-        /* Profile Content - Styled like Payment Section */
+        /* Profile Content */
         .profile-content {
             background: rgba(8,9,14,0.65);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(212,168,48,0.15);
             border-radius: 24px;
             padding: 2rem;
+            /* KEY FIX: prevent content from overflowing this box */
+            min-width: 0;
+            overflow: hidden;
         }
         
         /* Section Styles */
@@ -273,6 +284,7 @@
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
+            flex-shrink: 0;
         }
         
         .edit-icon i {
@@ -285,7 +297,7 @@
             transform: translateY(-1px);
         }
         
-        /* Info Cards - Balanced Grid */
+        /* Info Cards */
         .info-cards {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -297,6 +309,9 @@
             border-radius: 16px;
             padding: 1rem;
             transition: all 0.3s ease;
+            /* KEY FIX: prevent individual cards from overflowing */
+            min-width: 0;
+            overflow: hidden;
         }
         
         .info-label {
@@ -311,9 +326,10 @@
             font-size: 0.9rem;
             color: var(--bone);
             word-break: break-word;
+            overflow-wrap: break-word;
         }
         
-        /* Address Box - Clean Layout */
+        /* Address Box */
         .address-box {
             background: rgba(255,255,255,0.03);
             border-radius: 16px;
@@ -330,6 +346,8 @@
             font-size: 0.85rem;
             line-height: 1.4;
             word-break: break-word;
+            overflow-wrap: break-word;
+            min-width: 0;
         }
         
         .address-actions button {
@@ -349,15 +367,20 @@
             transform: translateY(-2px);
         }
         
-        /* Orders Table - Scrollable on Mobile */
-        .orders-table {
+        /* Orders Table - KEY FIX: proper scroll container */
+        .orders-table-wrapper {
+            width: 100%;
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            /* Prevent the scroll from bleeding out */
+            border-radius: 12px;
         }
-        
-        table {
+
+        .orders-table-wrapper table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 500px;
+            /* Only use min-width when there's actually a wrapper to scroll */
+            min-width: 480px;
         }
         
         th, td {
@@ -371,6 +394,7 @@
             letter-spacing: 0.1em;
             text-transform: uppercase;
             color: rgba(212,168,48,0.6);
+            white-space: nowrap;
         }
         
         td {
@@ -425,7 +449,7 @@
             color: rgba(248,244,237,0.5);
         }
         
-        /* Modals - Matching Checkout Page */
+        /* Modals */
         .modal {
             display: none;
             position: fixed;
@@ -598,9 +622,26 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            width: 30px;
+            height: 30px;
+            border: 2px solid rgba(212,168,48,0.2);
+            border-top-color: var(--gold-3);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        .loading-text {
+            text-align: center;
+            padding: 2rem;
+            color: rgba(248,244,237,0.5);
+        }
         
         /* ============================================
-           RESPONSIVE STYLES - BALANCED ON ALL SCREENS
+           RESPONSIVE — matching checkout.html approach
            ============================================ */
         
         @media (max-width: 1024px) {
@@ -611,9 +652,7 @@
             .profile-sidebar {
                 position: relative;
                 top: 0;
-                max-width: 400px;
-                margin: 0 auto;
-                width: 100%;
+                /* Don't centre it on tablet — let it be full width like checkout */
             }
             .nav-inner {
                 padding: 0 2rem;
@@ -624,11 +663,11 @@
             .profile-container {
                 padding: 7rem 1rem 3rem;
             }
-            
+
             .profile-header h1 {
                 font-size: 1.6rem;
             }
-            
+
             .profile-header p {
                 font-size: 0.75rem;
             }
@@ -649,11 +688,7 @@
             .profile-sidebar h3 {
                 font-size: 1rem;
             }
-            
-            .profile-email {
-                font-size: 0.7rem;
-            }
-            
+
             .stat-number {
                 font-size: 1.5rem;
             }
@@ -666,11 +701,7 @@
                 font-size: 1rem;
             }
             
-            .edit-icon {
-                font-size: 0.6rem;
-                padding: 0.4rem 0.7rem;
-            }
-            
+            /* Stack info cards to 1 column on small screens */
             .info-cards {
                 grid-template-columns: 1fr;
                 gap: 0.8rem;
@@ -689,8 +720,17 @@
                 text-align: center;
             }
             
+            .address-text {
+                text-align: left;
+            }
+
+            .address-actions {
+                width: 100%;
+            }
+            
             .address-actions button {
                 width: 100%;
+                text-align: center;
             }
             
             th, td {
@@ -698,18 +738,18 @@
             }
             
             th {
-                font-size: 0.65rem;
+                font-size: 0.6rem;
             }
             
             td {
-                font-size: 0.7rem;
+                font-size: 0.72rem;
             }
             
             .status-badge {
-                font-size: 0.65rem;
-                padding: 0.2rem 0.6rem;
+                font-size: 0.6rem;
+                padding: 0.2rem 0.5rem;
             }
-            
+
             .modal-content {
                 padding: 1.5rem;
             }
@@ -718,8 +758,13 @@
                 bottom: 1rem;
                 right: 1rem;
                 left: 1rem;
-                padding: 0.8rem 1.2rem;
+                transform: translateY(120%);
                 font-size: 0.8rem;
+                padding: 0.8rem 1.2rem;
+            }
+
+            .toast.show {
+                transform: translateY(0);
             }
         }
         
@@ -775,6 +820,7 @@
             
             .modal-content {
                 padding: 1.2rem;
+                border-radius: 18px;
             }
             
             .modal-content h3 {
@@ -798,23 +844,11 @@
                 width: 40px;
                 height: 40px;
             }
-        }
-        
-        /* Loading Spinner */
-        .loading-spinner {
-            width: 30px;
-            height: 30px;
-            border: 2px solid rgba(212,168,48,0.2);
-            border-top-color: var(--gold-3);
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-            margin: 0 auto 1rem;
-        }
-        
-        .loading-text {
-            text-align: center;
-            padding: 2rem;
-            color: rgba(248,244,237,0.5);
+
+            .edit-icon {
+                font-size: 0.6rem;
+                padding: 0.4rem 0.7rem;
+            }
         }
     </style>
 </head>
@@ -822,7 +856,7 @@
 
 <canvas id="ambient-canvas"></canvas>
 
-<!-- Navigation - Matching Checkout Page -->
+<!-- Navigation -->
 <nav>
     <div class="nav-inner">
         <a href="index.html" class="nav-logo">DOLLARCHIC</a>
@@ -1078,8 +1112,9 @@
             return;
         }
         
+        /* KEY FIX: wrap table in orders-table-wrapper for proper horizontal scroll */
         ordersList.innerHTML = `
-            <div class="orders-table">
+            <div class="orders-table-wrapper">
                 <table>
                     <thead>
                         <tr><th>Order ID</th><th>Date</th><th>Total</th><th>Status</th><th></th></tr>
@@ -1112,11 +1147,11 @@
                 itemsHtml = items.map(item => `
                     <div class="order-item-row">
                         <img src="${item.image || 'https://via.placeholder.com/45'}" class="order-item-img" alt="${item.name}">
-                        <div style="flex: 1;">
-                            <div style="font-size: 0.8rem;">${escapeHtml(item.name)}</div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 0.8rem; overflow-wrap: break-word;">${escapeHtml(item.name)}</div>
                             <div style="font-size: 0.65rem; color: var(--gold-2);">${formatCurrency(item.price)} x ${item.quantity}</div>
                         </div>
-                        <div style="font-size: 0.8rem;">${formatCurrency(item.price * item.quantity)}</div>
+                        <div style="font-size: 0.8rem; flex-shrink: 0;">${formatCurrency(item.price * item.quantity)}</div>
                     </div>
                 `).join('');
             } catch(e) {
