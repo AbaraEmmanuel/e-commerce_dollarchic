@@ -133,6 +133,7 @@
             letter-spacing: 0.08em !important;
         }
         
+        /* Auth Indicator - Profile Avatar Styles */
         .auth-indicator {
             display: flex;
             align-items: center;
@@ -140,33 +141,47 @@
             margin-right: 0.5rem;
         }
         
-        .verified-badge {
+        /* Profile Avatar Button */
+        .profile-avatar-btn {
             display: flex;
             align-items: center;
-            gap: 0.4rem;
-            background: rgba(42, 138, 92, 0.15);
-            padding: 0.4rem 0.8rem;
+            justify-content: center;
+            gap: 0.5rem;
+            background: rgba(212,168,48,0.1);
+            border: 1px solid rgba(212,168,48,0.3);
             border-radius: 40px;
-            border: 1px solid rgba(42, 138, 92, 0.3);
+            padding: 0.3rem 0.8rem 0.3rem 0.5rem;
             cursor: pointer;
             transition: all 0.3s ease;
+            text-decoration: none;
         }
         
-        .verified-badge:hover {
-            background: rgba(42, 138, 92, 0.25);
-            transform: translateY(-1px);
+        .profile-avatar-btn:hover {
+            background: rgba(212,168,48,0.2);
+            transform: translateY(-2px);
+            border-color: rgba(212,168,48,0.6);
         }
         
-        .verified-badge i {
-            color: #2a8a5c;
-            font-size: 0.8rem;
+        .avatar-circle {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--gold-molten), var(--gold-pure));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        .verified-badge span {
+        .avatar-circle i {
+            font-size: 0.9rem;
+            color: var(--obs-deep);
+        }
+        
+        .avatar-text {
             font-family: var(--font-sans);
-            font-size: 0.65rem;
-            font-weight: 400;
-            color: #2a8a5c;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--gold-champagne);
             letter-spacing: 0.05em;
         }
         
@@ -261,8 +276,8 @@
         
         @media (max-width: 768px) {
             .auth-indicator { gap: 0.3rem; }
-            .verified-badge span { display: none; }
-            .verified-badge { padding: 0.4rem; }
+            .avatar-text { display: none; }
+            .profile-avatar-btn { padding: 0.3rem; }
             .logout-btn span { display: none; }
             .logout-btn { padding: 0.4rem; }
         }
@@ -306,7 +321,9 @@
                 <a href="bags.html" class="nav-link">Bags</a>
             </div>
             <div class="nav-icons">
-                <button class="icon-btn search-toggle" onclick="alert('Search coming soon!');"><i class="fas fa-search"></i></button>
+                <button class="icon-btn search-toggle" onclick="location.href='search.html'">
+                    <i class="fas fa-search"></i>
+                </button>
                 <div class="auth-indicator" id="authIndicator"></div>
                 <button class="icon-btn cart-btn" id="cartBtn"><i class="fas fa-shopping-bag"></i><span class="cart-count" id="cartCount">0</span></button>
                 <button class="icon-btn menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
@@ -435,7 +452,7 @@
                 <span>Subtotal</span>
                 <span id="cartTotal">₦0.00</span>
             </div>
-            <button class="btn-primary full-width" onclick="alert('Checkout coming soon!'); return false;">Checkout</button>
+            <button class="btn-primary full-width" onclick="location.href='checkout.html'">Checkout</button>
         </div>
     </div>
     <div class="cart-overlay" id="cartOverlay"></div>
@@ -682,19 +699,24 @@
         }
 
         // ============================================
-        // AUTH
+        // AUTH - UPDATED WITH PROFILE AVATAR
         // ============================================
 
         async function checkAuthStatus() {
             if (typeof window.dollarchicAuth !== 'undefined') {
                 try {
                     const result = await window.dollarchicAuth.getCurrentUser();
-                    if (result.success && result.isAuthenticated) {
+                    if (result.success && result.isAuthenticated && result.user) {
                         isAuthenticated = true;
                         currentUser = result.user;
+                    } else {
+                        isAuthenticated = false;
+                        currentUser = null;
                     }
                 } catch (e) {
                     console.log('Auth error:', e);
+                    isAuthenticated = false;
+                    currentUser = null;
                 }
                 updateAuthUI();
             }
@@ -705,14 +727,34 @@
             if (!container) return;
 
             if (isAuthenticated && currentUser) {
-                const firstName = currentUser.user?.user_metadata?.first_name ||
-                                  currentUser.user?.email?.split('@')[0] || 'Member';
+                // Get user's first name or email prefix
+                const firstName = currentUser.user_metadata?.first_name || 
+                                  currentUser.email?.split('@')[0] || 
+                                  'Member';
+                const initial = firstName.charAt(0).toUpperCase();
+                
                 container.innerHTML = `
-                    <div class="verified-badge"><i class="fas fa-check-circle"></i><span>${firstName}</span></div>
-                    <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Exit</span></button>`;
+                    <a href="profile.html" class="profile-avatar-btn" id="profileBtn">
+                        <div class="avatar-circle">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span class="avatar-text">${firstName}</span>
+                    </a>
+                    <button class="logout-btn" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Exit</span>
+                    </button>
+                `;
+                
+                // Add logout handler
                 document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
             } else {
-                container.innerHTML = `<button class="login-btn" id="loginBtn"><i class="fas fa-user"></i><span>Sign In</span></button>`;
+                container.innerHTML = `
+                    <button class="login-btn" id="loginBtn">
+                        <i class="fas fa-user"></i>
+                        <span>Sign In</span>
+                    </button>
+                `;
                 document.getElementById('loginBtn')?.addEventListener('click', () => {
                     window.location.href = 'login.html';
                 });

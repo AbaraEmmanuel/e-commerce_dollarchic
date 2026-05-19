@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | Dollarchic's Store</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Josefin+Sans:wght@100;200;300;400;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/cart.js"></script>
+    
+    <style>
+        :root {
+            --void: #020406;
+            --abyss: #050a0d;
+            --deep: #080f14;
+            --gold-2: #d4a830;
+            --gold-3: #f0c842;
+            --bone: #f8f4ed;
+            --success: #2a8a5c;
+            --pending: #f39c12;
+            --processing: #3498db;
+            --completed: #2ecc71;
+            --cancelled: #e74c3c;
+            --serif: 'Bodoni Moda', serif;
+            --display: 'Cinzel', serif;
+            --sans: 'DM Sans', sans-serif;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--sans);
+            font-weight: 300;
+            background: var(--void);
+            color: var(--bone);
+            min-height: 100vh;
+        }
+        
+        /* Ambient Canvas */
+        #ambient-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1.5rem 0;
+            background: rgba(2,4,6,0.7);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(212,168,48,0.1);
+        }
+        .nav-inner {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 0 4rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .nav-logo {
+            font-family: var(--display);
+            font-size: 1.2rem;
+            letter-spacing: 0.3em;
+            color: var(--bone);
+            text-decoration: none;
+        }
+        .nav-logo::before {
+            content: '✦';
+            color: var(--gold-3);
+            margin-right: 0.5rem;
+            display: inline-block;
+        }
+        .nav-back {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: rgba(248,244,237,0.5);
+            text-decoration: none;
+            font-size: 0.65rem;
+            transition: color 0.3s, gap 0.3s;
+        }
+        .nav-back:hover {
+            color: var(--gold-3);
+            gap: 1rem;
+        }
+        
+        /* Main Container */
+        .profile-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 8rem 2rem 4rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Profile Header */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .profile-title h1 {
+            font-family: var(--serif);
+            font-size: 2rem;
+            font-weight: 400;
+            margin-bottom: 0.25rem;
+        }
+        
+        .profile-title p {
+            color: rgba(248,244,237,0.5);
+            font-size: 0.8rem;
+        }
+        
+        /* Profile Grid */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 2rem;
+        }
+        
+        /* Profile Sidebar */
+        .profile-sidebar {
+            background: rgba(8,9,14,0.65);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(212,168,48,0.15);
+            border-radius: 24px;
+            padding: 2rem;
+            text-align: center;
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, var(--gold-2), var(--gold-3));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .profile-avatar i {
+            font-size: 3rem;
+            color: var(--void);
+        }
+        
+        .profile-sidebar h3 {
+            font-family: var(--serif);
+            font-size: 1.3rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .profile-email {
+            color: rgba(248,244,237,0.5);
+            font-size: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .profile-stats {
+            display: flex;
+            justify-content: center;
+            margin: 1.5rem 0;
+            padding: 1rem 0;
+            border-top: 1px solid rgba(212,168,48,0.1);
+            border-bottom: 1px solid rgba(212,168,48,0.1);
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--gold-3);
+        }
+        
+        .stat-label {
+            font-size: 0.6rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(248,244,237,0.4);
+        }
+        
+        .logout-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: rgba(231,76,60,0.1);
+            border: 1px solid rgba(231,76,60,0.3);
+            color: #e74c3c;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(231,76,60,0.2);
+            transform: translateY(-2px);
+        }
+        
+        /* Profile Content */
+        .profile-content {
+            background: rgba(8,9,14,0.65);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(212,168,48,0.15);
+            border-radius: 24px;
+            padding: 2rem;
+        }
+        
+        /* Section Styles */
+        .profile-section {
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-family: var(--serif);
+            font-size: 1.2rem;
+            font-weight: 400;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(212,168,48,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .section-title .edit-icon {
+            font-size: 0.7rem;
+            color: var(--gold-2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .section-title .edit-icon:hover {
+            color: var(--gold-3);
+            transform: translateY(-1px);
+        }
+        
+        /* Info Cards */
+        .info-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .info-card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 1.25rem;
+        }
+        
+        .info-label {
+            font-size: 0.6rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(212,168,48,0.6);
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-value {
+            font-size: 1rem;
+            color: var(--bone);
+            word-break: break-word;
+        }
+        
+        /* Address Box */
+        .address-box {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .address-text {
+            flex: 1;
+        }
+        
+        .address-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .address-actions button {
+            background: rgba(212,168,48,0.1);
+            border: 1px solid rgba(212,168,48,0.3);
+            color: var(--gold-2);
+            padding: 0.4rem 1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 0.65rem;
+            transition: all 0.3s ease;
+        }
+        
+        .address-actions button:hover {
+            background: rgba(212,168,48,0.2);
+            transform: translateY(-2px);
+        }
+        
+        /* Orders Table */
+        .orders-table {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        th {
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(212,168,48,0.6);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        
+        .status-pending { background: rgba(243,156,18,0.2); color: var(--pending); }
+        .status-processing { background: rgba(52,152,219,0.2); color: var(--processing); }
+        .status-completed { background: rgba(46,204,113,0.2); color: var(--completed); }
+        .status-cancelled { background: rgba(231,76,60,0.2); color: var(--cancelled); }
+        
+        .view-order-btn {
+            background: none;
+            border: 1px solid rgba(212,168,48,0.3);
+            color: var(--gold-2);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.65rem;
+            transition: all 0.3s ease;
+        }
+        
+        .view-order-btn:hover {
+            background: rgba(212,168,48,0.1);
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            color: rgba(212,168,48,0.2);
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        /* Edit Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(10px);
+            z-index: 10001;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--deep);
+            border: 1px solid rgba(212,168,48,0.2);
+            border-radius: 24px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            animation: modalFadeIn 0.3s ease;
+        }
+        
+        .modal-content h3 {
+            font-family: var(--serif);
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-content input,
+        .modal-content textarea {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(212,168,48,0.15);
+            color: var(--bone);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            font-family: var(--sans);
+        }
+        
+        .modal-content textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .save-btn {
+            flex: 1;
+            padding: 0.8rem;
+            background: var(--gold-2);
+            border: none;
+            color: var(--void);
+            border-radius: 40px;
+            cursor: pointer;
+        }
+        
+        .cancel-btn {
+            flex: 1;
+            padding: 0.8rem;
+            background: none;
+            border: 1px solid rgba(212,168,48,0.3);
+            color: var(--bone);
+            border-radius: 40px;
+            cursor: pointer;
+        }
+        
+        /* Order Detail Modal */
+        .order-detail-content {
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .order-items-list {
+            margin: 1rem 0;
+        }
+        
+        .order-item-row {
+            display: flex;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .order-item-img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--deep);
+            border-left: 2px solid var(--gold-2);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--bone);
+            z-index: 99999;
+            transform: translateX(120%);
+            transition: transform 0.5s ease;
+            border-radius: 12px;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 1024px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+            .profile-sidebar {
+                position: static;
+            }
+            .info-cards {
+                grid-template-columns: 1fr;
+            }
+            .nav-inner {
+                padding: 0 2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .profile-container {
+                padding: 7rem 1rem 3rem;
+            }
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            th, td {
+                font-size: 0.7rem;
+                padding: 0.5rem;
+            }
+            .address-box {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="ambient-canvas"></canvas>
+
+<!-- Navigation -->
+<nav>
+    <div class="nav-inner">
+        <a href="index.html" class="nav-logo">DOLLARCHIC</a>
+        <a href="index.html" class="nav-back">
+            <i class="fas fa-arrow-left"></i> Back to Store
+        </a>
+    </div>
+</nav>
+
+<div class="profile-container">
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="profile-title">
+            <h1>My Profile</h1>
+            <p>Manage your account information and track your orders</p>
+        </div>
+    </div>
+    
+    <!-- Profile Grid -->
+    <div class="profile-grid">
+        <!-- Sidebar -->
+        <div class="profile-sidebar">
+            <div class="profile-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <h3 id="profileName">Loading...</h3>
+            <p class="profile-email" id="profileEmail">Loading...</p>
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="orderCount">0</div>
+                    <div class="stat-label">Orders</div>
+                </div>
+            </div>
+            <button class="logout-btn" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </button>
+        </div>
+        
+        <!-- Content Area -->
+        <div class="profile-content">
+            <!-- Personal Information Section -->
+            <div class="profile-section">
+                <div class="section-title">
+                    <span>Personal Information</span>
+                    <i class="fas fa-pen edit-icon" onclick="openInfoModal()"></i>
+                </div>
+                <div class="info-cards">
+                    <div class="info-card">
+                        <div class="info-label">Full Name</div>
+                        <div class="info-value" id="displayName">-</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">Email Address</div>
+                        <div class="info-value" id="displayEmail">-</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">Phone Number</div>
+                        <div class="info-value" id="displayPhone">Not set</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">Member Since</div>
+                        <div class="info-value" id="memberSince">-</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Shipping Address Section -->
+            <div class="profile-section">
+                <div class="section-title">
+                    <span>Shipping Address</span>
+                    <i class="fas fa-pen edit-icon" onclick="openAddressModal()"></i>
+                </div>
+                <div class="address-box">
+                    <div class="address-text" id="displayAddress">No address saved yet</div>
+                    <div class="address-actions">
+                        <button onclick="openAddressModal()">
+                            <i class="fas fa-plus"></i> Add/Update
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order History Section -->
+            <div class="profile-section">
+                <div class="section-title">
+                    <span>Order History</span>
+                </div>
+                <div id="ordersList">
+                    <div style="text-align: center; padding: 2rem;">
+                        <div style="width: 30px; height: 30px; border: 2px solid rgba(212,168,48,0.2); border-top-color: var(--gold-3); border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto 1rem;"></div>
+                        <p>Loading your orders...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Info Modal -->
+<div class="modal" id="infoModal">
+    <div class="modal-content">
+        <h3>Edit Personal Information</h3>
+        <input type="text" id="editName" placeholder="Full Name">
+        <input type="tel" id="editPhone" placeholder="Phone Number">
+        <div class="modal-buttons">
+            <button class="save-btn" id="saveInfoBtn">Save Changes</button>
+            <button class="cancel-btn" id="cancelInfoBtn">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Address Modal -->
+<div class="modal" id="addressModal">
+    <div class="modal-content">
+        <h3>Edit Shipping Address</h3>
+        <textarea id="editAddress" placeholder="Enter your full shipping address&#10;Street, City, State, Zip Code" rows="4"></textarea>
+        <div class="modal-buttons">
+            <button class="save-btn" id="saveAddressBtn">Save Address</button>
+            <button class="cancel-btn" id="cancelAddressBtn">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Order Detail Modal -->
+<div class="modal" id="orderDetailModal">
+    <div class="modal-content order-detail-content">
+        <h3 id="detailOrderId">Order Details</h3>
+        <div id="orderDetailContent"></div>
+        <button class="cancel-btn" id="closeDetailBtn" style="margin-top: 1rem;">Close</button>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
+
+<script>
+    // Global variables
+    let currentUser = null;
+    let userOrders = [];
+    let userProfile = {
+        name: '',
+        email: '',
+        phone: '',
+        address: '',
+        memberSince: ''
+    };
+    
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toastMsg').textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+    
+    function formatDate(dateString) {
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+    
+    function formatCurrency(amount) {
+        return `₦${parseFloat(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+    
+    function getStatusClass(status) {
+        switch(status) {
+            case 'pending_confirmation': return 'status-pending';
+            case 'processing': return 'status-processing';
+            case 'completed': return 'status-completed';
+            case 'cancelled': return 'status-cancelled';
+            default: return 'status-pending';
+        }
+    }
+    
+    function getStatusText(status) {
+        switch(status) {
+            case 'pending_confirmation': return 'Pending Confirmation';
+            case 'processing': return 'Processing';
+            case 'completed': return 'Completed';
+            case 'cancelled': return 'Cancelled';
+            default: return status;
+        }
+    }
+    
+    // Load user profile
+    async function loadUserProfile() {
+        if (typeof window.dollarchicAuth === 'undefined') {
+            window.location.href = 'login.html';
+            return false;
+        }
+        
+        const result = await window.dollarchicAuth.getCurrentUser();
+        if (!result.success || !result.isAuthenticated) {
+            window.location.href = 'login.html';
+            return false;
+        }
+        
+        currentUser = result.user;
+        
+        const { data: profile } = await window.dollarchicSupabase
+            .from('profiles')
+            .select('*')
+            .eq('id', currentUser.id)
+            .single();
+        
+        userProfile = {
+            name: profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}` : currentUser.email?.split('@')[0] || 'Member',
+            email: currentUser.email,
+            phone: profile?.phone || '',
+            address: profile?.address || '',
+            memberSince: currentUser.created_at || new Date().toISOString()
+        };
+        
+        // Update UI
+        document.getElementById('profileName').textContent = userProfile.name;
+        document.getElementById('profileEmail').textContent = userProfile.email;
+        document.getElementById('displayName').textContent = userProfile.name;
+        document.getElementById('displayEmail').textContent = userProfile.email;
+        document.getElementById('displayPhone').textContent = userProfile.phone || 'Not set';
+        document.getElementById('displayAddress').textContent = userProfile.address || 'No address saved yet';
+        document.getElementById('memberSince').textContent = formatDate(userProfile.memberSince);
+        
+        return true;
+    }
+    
+    // Load user orders
+    async function loadUserOrders() {
+        const { data, error } = await window.dollarchicSupabase
+            .from('orders')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .order('created_at', { ascending: false });
+        
+        if (error) {
+            console.error('Error loading orders:', error);
+            return;
+        }
+        
+        userOrders = data || [];
+        document.getElementById('orderCount').textContent = userOrders.length;
+        
+        const ordersList = document.getElementById('ordersList');
+        if (userOrders.length === 0) {
+            ordersList.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-shopping-bag"></i>
+                    <p>You haven't placed any orders yet</p>
+                    <a href="scents.html" style="color: var(--gold-2); margin-top: 1rem; display: inline-block;">Start Shopping</a>
+                </div>
+            `;
+            return;
+        }
+        
+        ordersList.innerHTML = `
+            <div class="orders-table">
+                <table>
+                    <thead>
+                        <tr><th>Order ID</th><th>Date</th><th>Total</th><th>Status</th><th>Action</th></tr>
+                    </thead>
+                    <tbody>
+                        ${userOrders.map(order => `
+                            <tr>
+                                <td>#${order.id}</td>
+                                <td>${formatDate(order.created_at)}</td>
+                                <td>${formatCurrency(order.total_amount)}</td>
+                                <td><span class="status-badge ${getStatusClass(order.status)}">${getStatusText(order.status)}</span></td>
+                                <td><button class="view-order-btn" onclick="viewOrderDetails(${order.id})">View</button></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+    
+    // View order details
+    window.viewOrderDetails = async function(orderId) {
+        const order = userOrders.find(o => o.id === orderId);
+        if (!order) return;
+        
+        let itemsHtml = '';
+        if (order.items) {
+            try {
+                const items = JSON.parse(order.items);
+                itemsHtml = items.map(item => `
+                    <div class="order-item-row">
+                        <img src="${item.image || 'https://via.placeholder.com/50'}" class="order-item-img">
+                        <div style="flex: 1;">
+                            <div>${item.name}</div>
+                            <div style="font-size: 0.7rem; color: var(--gold-2);">₦${item.price} x ${item.quantity}</div>
+                        </div>
+                        <div>₦${(item.price * item.quantity).toFixed(2)}</div>
+                    </div>
+                `).join('');
+            } catch(e) {
+                itemsHtml = '<p>Items data not available</p>';
+            }
+        }
+        
+        document.getElementById('detailOrderId').textContent = `Order #${order.id}`;
+        document.getElementById('orderDetailContent').innerHTML = `
+            <div class="info-card" style="margin-bottom: 1rem;">
+                <div class="info-label">Order Date</div>
+                <div class="info-value">${formatDate(order.created_at)}</div>
+            </div>
+            <div class="info-card" style="margin-bottom: 1rem;">
+                <div class="info-label">Status</div>
+                <div class="info-value"><span class="status-badge ${getStatusClass(order.status)}">${getStatusText(order.status)}</span></div>
+            </div>
+            <div class="info-card" style="margin-bottom: 1rem;">
+                <div class="info-label">Shipping Address</div>
+                <div class="info-value">${order.shipping_address || 'Not specified'}</div>
+            </div>
+            <div class="info-card" style="margin-bottom: 1rem;">
+                <div class="info-label">Delivery Date</div>
+                <div class="info-value">${formatDate(order.delivery_date) || 'To be confirmed'}</div>
+            </div>
+            <div class="info-card" style="margin-bottom: 1rem;">
+                <div class="info-label">Items</div>
+                <div class="order-items-list">${itemsHtml}</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Total Amount</div>
+                <div class="info-value">${formatCurrency(order.total_amount)}</div>
+            </div>
+            ${order.special_instructions ? `
+            <div class="info-card" style="margin-top: 1rem;">
+                <div class="info-label">Special Instructions</div>
+                <div class="info-value">${order.special_instructions}</div>
+            </div>
+            ` : ''}
+        `;
+        
+        document.getElementById('orderDetailModal').classList.add('show');
+    };
+    
+    // Update personal info
+    async function updatePersonalInfo(name, phone) {
+        const nameParts = name.trim().split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+        
+        const { error } = await window.dollarchicSupabase
+            .from('profiles')
+            .upsert({
+                id: currentUser.id,
+                first_name: firstName,
+                last_name: lastName,
+                phone: phone,
+                updated_at: new Date()
+            });
+        
+        if (error) {
+            showToast('Error updating profile');
+            return false;
+        }
+        
+        userProfile.name = name;
+        userProfile.phone = phone;
+        
+        document.getElementById('profileName').textContent = name;
+        document.getElementById('displayName').textContent = name;
+        document.getElementById('displayPhone').textContent = phone || 'Not set';
+        
+        showToast('Profile updated successfully');
+        return true;
+    }
+    
+    // Update address
+    async function updateAddress(address) {
+        const { error } = await window.dollarchicSupabase
+            .from('profiles')
+            .upsert({
+                id: currentUser.id,
+                address: address,
+                updated_at: new Date()
+            });
+        
+        if (error) {
+            showToast('Error updating address');
+            return false;
+        }
+        
+        userProfile.address = address;
+        document.getElementById('displayAddress').textContent = address || 'No address saved yet';
+        
+        showToast('Address updated successfully');
+        return true;
+    }
+    
+    // Modal functions
+    function openInfoModal() {
+        document.getElementById('editName').value = userProfile.name;
+        document.getElementById('editPhone').value = userProfile.phone || '';
+        document.getElementById('infoModal').classList.add('show');
+    }
+    
+    function openAddressModal() {
+        document.getElementById('editAddress').value = userProfile.address || '';
+        document.getElementById('addressModal').classList.add('show');
+    }
+    
+    // Logout
+    async function handleLogout() {
+        await window.dollarchicAuth.signOut();
+        window.location.href = 'index.html';
+    }
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', async () => {
+        let retries = 0;
+        while (!window.dollarchicSupabase && retries < 20) {
+            await new Promise(r => setTimeout(r, 500));
+            retries++;
+        }
+        
+        const loggedIn = await loadUserProfile();
+        if (!loggedIn) return;
+        
+        await loadUserOrders();
+        
+        // Info modal handlers
+        document.getElementById('saveInfoBtn').addEventListener('click', async () => {
+            const name = document.getElementById('editName').value.trim();
+            const phone = document.getElementById('editPhone').value.trim();
+            
+            if (!name) {
+                showToast('Please enter your name');
+                return;
+            }
+            
+            await updatePersonalInfo(name, phone);
+            document.getElementById('infoModal').classList.remove('show');
+        });
+        
+        document.getElementById('cancelInfoBtn').addEventListener('click', () => {
+            document.getElementById('infoModal').classList.remove('show');
+        });
+        
+        // Address modal handlers
+        document.getElementById('saveAddressBtn').addEventListener('click', async () => {
+            const address = document.getElementById('editAddress').value.trim();
+            await updateAddress(address);
+            document.getElementById('addressModal').classList.remove('show');
+        });
+        
+        document.getElementById('cancelAddressBtn').addEventListener('click', () => {
+            document.getElementById('addressModal').classList.remove('show');
+        });
+        
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+        
+        // Close detail modal
+        document.getElementById('closeDetailBtn').addEventListener('click', () => {
+            document.getElementById('orderDetailModal').classList.remove('show');
+        });
+        
+        // Close modals on outside click
+        window.addEventListener('click', (e) => {
+            if (e.target === document.getElementById('infoModal')) 
+                document.getElementById('infoModal').classList.remove('show');
+            if (e.target === document.getElementById('addressModal')) 
+                document.getElementById('addressModal').classList.remove('show');
+            if (e.target === document.getElementById('orderDetailModal')) 
+                document.getElementById('orderDetailModal').classList.remove('show');
+        });
+        
+        // Make modal functions global
+        window.openInfoModal = openInfoModal;
+        window.openAddressModal = openAddressModal;
+    });
+</script>
+
+<!-- Ambient Canvas Animation -->
+<script>
+    (function() {
+        const canvas = document.getElementById('ambient-canvas');
+        const ctx = canvas.getContext('2d');
+        let W, H, particles = [];
+
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        class Particle {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * W;
+                this.y = Math.random() * H;
+                this.size = Math.random() * 2.5 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.2;
+                this.speedY = -Math.random() * 0.3 - 0.05;
+                this.opacity = Math.random() * 0.4;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.y < -50 || this.x > W + 50 || this.x < -50) this.reset();
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.opacity;
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 3);
+                grad.addColorStop(0, '#f0c842');
+                grad.addColorStop(0.4, '#d4a830');
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        for (let i = 0; i < 60; i++) particles.push(new Particle());
+
+        function loop() {
+            ctx.clearRect(0, 0, W, H);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(loop);
+        }
+        loop();
+    })();
+</script>
+</body>
+</html>

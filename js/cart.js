@@ -1,39 +1,116 @@
 // ============================================
 // DOLLARCHIC'S STORE - CART WITH SUPABASE
+// REQUIRES USER TO BE SIGNED IN
 // ============================================
 
 let cart = [];
-let currentSessionId = null;
-let isLoading = false; // Global loading state for cart operations
-
-// Generate or retrieve session ID
-function getSessionId() {
-    let sessionId = localStorage.getItem('dollarchic_session_id');
-    if (!sessionId) {
-        sessionId = 'guest_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('dollarchic_session_id', sessionId);
-    }
-    return sessionId;
-}
+let currentUserId = null;
+let currentUserEmail = null;
+let isLoading = false;
 
 // ============================================
-// LOADING INDICATORS
+// CHECK IF USER IS SIGNED IN
 // ============================================
 
-function showCartLoading() {
-    const cartItemsEl = document.getElementById('cartItems');
-    if (cartItemsEl && cartItemsEl.innerHTML !== '<div class="empty-cart"><i class="fas fa-shopping-bag"></i><p>Your bag is empty</p></div>') {
-        cartItemsEl.innerHTML = `
-            <div class="cart-loading-state" style="text-align: center; padding: 3rem;">
-                <div class="loading-spinner-small" style="width: 30px; height: 30px; border: 2px solid rgba(210, 170, 50, 0.2); border-top-color: var(--gold-pure); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem;"></div>
-                <p style="color: var(--ash); font-size: 0.8rem;">Updating your bag...</p>
-            </div>
-        `;
+async function isUserSignedIn() {
+    console.log('Checking if user is signed in...');
+    
+    if (typeof window.dollarchicAuth === 'undefined') {
+        console.log('dollarchicAuth not available');
+        return false;
+    }
+    
+    try {
+        const result = await window.dollarchicAuth.getCurrentUser();
+        console.log('Auth result:', result);
+        
+        // FIXED: Your structure has result.user directly (no nesting)
+        if (result.success && result.isAuthenticated && result.user && result.user.id) {
+            currentUserId = result.user.id;
+            currentUserEmail = result.user.email;
+            console.log('User is signed in:', currentUserEmail, 'ID:', currentUserId);
+            return true;
+        }
+        console.log('User is NOT signed in');
+        return false;
+    } catch (error) {
+        console.error('Error checking auth:', error);
+        return false;
     }
 }
 
-function hideCartLoading() {
-    // The actual cart content will be restored by updateCartUI
+// In cart.js - REPLACE the getCurrentUserId function with this:
+
+async function getCurrentUserId() {
+    // Return cached value if available
+    if (currentUserId) return currentUserId;
+    
+    // Check if user is signed in and cache the result
+    const isLoggedIn = await isUserSignedIn();
+    if (isLoggedIn && currentUserId) {
+        return currentUserId;
+    }
+    return null;
+}
+
+// Also make sure isUserSignedIn doesn't call getCurrentUserId
+async function isUserSignedIn() {
+    console.log('Checking if user is signed in...');
+    
+    if (typeof window.dollarchicAuth === 'undefined') {
+        console.log('dollarchicAuth not available');
+        return false;
+    }
+    
+    try {
+        const result = await window.dollarchicAuth.getCurrentUser();
+        console.log('Auth result:', result);
+        
+        if (result.success && result.isAuthenticated && result.user && result.user.id) {
+            // Cache the user ID
+            currentUserId = result.user.id;
+            currentUserEmail = result.user.email;
+            console.log('User is signed in:', currentUserEmail, 'ID:', currentUserId);
+            return true;
+        }
+        console.log('User is NOT signed in');
+        currentUserId = null;
+        currentUserEmail = null;
+        return false;
+    } catch (error) {
+        console.error('Error checking auth:', error);
+        return false;
+    }
+}
+// ============================================
+// SHOW LOGIN REQUIRED MESSAGE
+// ============================================
+
+function showLoginRequiredMessage() {
+    const message = document.createElement('div');
+    message.style.cssText = `
+        position: fixed; bottom: 30px; right: 30px; background: #0d1a1f;
+        color: white; padding: 1rem 1.5rem; border-radius: 12px;
+        display: flex; align-items: center; gap: 12px; z-index: 10000;
+        transform: translateX(400px); transition: transform 0.3s ease;
+        border-left: 3px solid #d4a830; box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        cursor: pointer;
+    `;
+    message.innerHTML = `
+        <i class="fas fa-exclamation-circle" style="color: #d4a830;"></i>
+        <span>Please sign in to add items to your bag</span>
+    `;
+    document.body.appendChild(message);
+    setTimeout(() => message.style.transform = 'translateX(0)', 10);
+    
+    message.addEventListener('click', () => {
+        window.location.href = 'login.html';
+    });
+    
+    setTimeout(() => {
+        message.style.transform = 'translateX(400px)';
+        setTimeout(() => message.remove(), 300);
+    }, 4000);
 }
 
 // ============================================
@@ -41,16 +118,28 @@ function hideCartLoading() {
 // ============================================
 
 async function loadCart() {
-    // Show loading indicator in cart if cart is open
-    const cartSidebar = document.getElementById('cart-sidebar');
-    if (cartSidebar && cartSidebar.classList.contains('open')) {
-        showCartLoading();
+    console.log('loadCart() called');
+    
+    const isLoggedIn = await isUserSignedIn();
+    console.log('Is logged in?', isLoggedIn);
+    
+    if (!isLoggedIn) {
+        cart = [];
+        updateCartUI();
+        return;
     }
     
     try {
-        const currentUser = await getCurrentUserFromSupabase();
+        const userId = await getCurrentUserId();
+        console.log('User ID:', userId);
         
-        let query = window.dollarchicSupabase
+        if (!userId) {
+            cart = [];
+            updateCartUI();
+            return;
+        }
+        
+        const { data, error } = await window.dollarchicSupabase
             .from('carts')
             .select(`
                 id,
@@ -64,18 +153,12 @@ async function loadCart() {
                     badge,
                     family
                 )
-            `);
-        
-        if (currentUser) {
-            query = query.eq('user_id', currentUser.id);
-        } else {
-            currentSessionId = getSessionId();
-            query = query.eq('session_id', currentSessionId);
-        }
-        
-        const { data, error } = await query;
+            `)
+            .eq('user_id', userId);
         
         if (error) throw error;
+        
+        console.log('Cart data from Supabase:', data);
         
         if (data && data.length > 0) {
             cart = data.map(item => ({
@@ -92,20 +175,12 @@ async function loadCart() {
             cart = [];
         }
         
+        console.log('Cart loaded:', cart);
         updateCartUI();
     } catch (error) {
         console.error('Error loading cart from Supabase:', error);
-        loadCartFromLocalStorage();
-    }
-}
-
-// Fallback: Load from localStorage
-function loadCartFromLocalStorage() {
-    const saved = localStorage.getItem('dollarchic_cart_backup');
-    if (saved) {
-        cart = JSON.parse(saved);
+        cart = [];
         updateCartUI();
-        syncCartToSupabase();
     }
 }
 
@@ -113,80 +188,57 @@ function loadCartFromLocalStorage() {
 // SAVE CART TO SUPABASE
 // ============================================
 
-async function saveCart(showLoadingIndicator = true) {
+async function saveCart() {
+    console.log('saveCart() called');
+    
+    const isLoggedIn = await isUserSignedIn();
+    console.log('Is logged in for save?', isLoggedIn);
+    
+    if (!isLoggedIn) {
+        console.log('Not logged in, cannot save cart');
+        updateCartUI();
+        return;
+    }
+    
     if (isLoading) return;
     isLoading = true;
     
-    // Show loading in cart sidebar if it's open
-    const cartSidebar = document.getElementById('cart-sidebar');
-    const cartWasOpen = cartSidebar && cartSidebar.classList.contains('open');
-    
-    if (showLoadingIndicator && cartWasOpen) {
-        showCartLoading();
-    }
-    
     try {
-        const currentUser = await getCurrentUserFromSupabase();
+        const userId = await getCurrentUserId();
+        console.log('User ID for save:', userId);
         
-        for (const item of cart) {
-            const cartItem = {
+        if (!userId) {
+            isLoading = false;
+            return;
+        }
+        
+        // Delete existing cart items for this user
+        const { error: deleteError } = await window.dollarchicSupabase
+            .from('carts')
+            .delete()
+            .eq('user_id', userId);
+        
+        if (deleteError) throw deleteError;
+        
+        // Insert new cart items
+        if (cart.length > 0) {
+            const cartItems = cart.map(item => ({
                 product_id: item.id,
-                quantity: item.quantity
-            };
+                quantity: item.quantity,
+                user_id: userId,
+                updated_at: new Date()
+            }));
             
-            if (currentUser) {
-                cartItem.user_id = currentUser.id;
-            } else {
-                currentSessionId = getSessionId();
-                cartItem.session_id = currentSessionId;
-            }
-            
-            let existingQuery = window.dollarchicSupabase
+            const { error: insertError } = await window.dollarchicSupabase
                 .from('carts')
-                .select('id')
-                .eq('product_id', item.id);
+                .insert(cartItems);
             
-            if (currentUser) {
-                existingQuery = existingQuery.eq('user_id', currentUser.id);
-            } else {
-                existingQuery = existingQuery.eq('session_id', currentSessionId);
-            }
-            
-            const { data: existing } = await existingQuery;
-            
-            if (existing && existing.length > 0) {
-                await window.dollarchicSupabase
-                    .from('carts')
-                    .update({ quantity: item.quantity, updated_at: new Date() })
-                    .eq('id', existing[0].id);
-            } else {
-                await window.dollarchicSupabase
-                    .from('carts')
-                    .insert([cartItem]);
-            }
+            if (insertError) throw insertError;
+            console.log('Cart saved successfully');
         }
-        
-        const productIds = cart.map(item => item.id);
-        if (productIds.length > 0) {
-            let deleteQuery = window.dollarchicSupabase
-                .from('carts')
-                .delete()
-                .not('product_id', 'in', `(${productIds.join(',')})`);
-            
-            if (currentUser) {
-                deleteQuery = deleteQuery.eq('user_id', currentUser.id);
-            } else {
-                deleteQuery = deleteQuery.eq('session_id', currentSessionId);
-            }
-            
-            await deleteQuery;
-        }
-        
-        localStorage.setItem('dollarchic_cart_backup', JSON.stringify(cart));
         
     } catch (error) {
         console.error('Error saving cart to Supabase:', error);
-        localStorage.setItem('dollarchic_cart_backup', JSON.stringify(cart));
     } finally {
         isLoading = false;
     }
@@ -195,67 +247,24 @@ async function saveCart(showLoadingIndicator = true) {
 }
 
 // ============================================
-// SYNC LOCALSTORAGE CART TO SUPABASE
+// CART OPERATIONS WITH LOGIN CHECK
 // ============================================
 
-async function syncCartToSupabase() {
-    if (cart.length === 0) return;
-    
-    try {
-        const currentUser = await getCurrentUserFromSupabase();
-        
-        for (const item of cart) {
-            const cartItem = {
-                product_id: item.id,
-                quantity: item.quantity
-            };
-            
-            if (currentUser) {
-                cartItem.user_id = currentUser.id;
-            } else {
-                cartItem.session_id = getSessionId();
-            }
-            
-            await window.dollarchicSupabase
-                .from('carts')
-                .upsert([cartItem], { onConflict: 'user_id, product_id' });
-        }
-        
-        console.log('Cart synced to Supabase');
-    } catch (error) {
-        console.error('Error syncing cart:', error);
-    }
-}
-
-// ============================================
-// GET CURRENT USER HELPER
-// ============================================
-
-async function getCurrentUserFromSupabase() {
-    if (typeof window.dollarchicAuth !== 'undefined') {
-        const result = await window.dollarchicAuth.getCurrentUser();
-        if (result.success && result.isAuthenticated) {
-            return result.user.user;
-        }
-    }
-    return null;
-}
-
-// ============================================
-// CART OPERATIONS (with loading states)
-// ============================================
-
-// Main function that accepts a product object
 async function addToCart(product) {
-    // Validate product
-    if (!product || !product.id) {
-        console.error('Invalid product data:', product);
-        showNotification('Unable to add item. Please try again.', 'error');
+    console.log('addToCart called with:', product);
+    
+    const isLoggedIn = await isUserSignedIn();
+    console.log('Is logged in for add?', isLoggedIn);
+    
+    if (!isLoggedIn) {
+        showLoginRequiredMessage();
         return;
     }
     
-    // Show loading on the product button (handled by the page)
-    // The page's button will show its own loading spinner
+    if (!product || !product.id) {
+        console.error('Invalid product data:', product);
+        return;
+    }
     
     const existing = cart.find(item => item.id === product.id);
     
@@ -265,34 +274,56 @@ async function addToCart(product) {
         cart.push({ ...product, quantity: 1 });
     }
     
-    await saveCart(true);
-    updateCartBadge();
-    showNotification(`${product.name} added to bag`, 'success');
+    await saveCart();
+    
+    if (typeof window.showNotification === 'function') {
+        window.showNotification(`${product.name} added to bag`);
+    } else {
+        showToastMessage(`${product.name} added to bag`);
+    }
+    
     animateCartIcon();
 }
 
 async function removeFromCart(productId) {
-    // Show loading in cart
-    showCartLoading();
+    const isLoggedIn = await isUserSignedIn();
+    
+    if (!isLoggedIn) {
+        showLoginRequiredMessage();
+        return;
+    }
+    
+    setCartItemLoading(productId, true);
     
     cart = cart.filter(item => item.id !== productId);
-    await saveCart(true);
+    await saveCart();
     
-    const productName = cart.find(item => item.id === productId)?.name || 'Item';
-    showNotification(`Removed from bag`, 'info');
+    setCartItemLoading(productId, false);
+    showToastMessage('Item removed from bag');
 }
 
 async function updateQuantity(productId, change) {
+    const isLoggedIn = await isUserSignedIn();
+    
+    if (!isLoggedIn) {
+        showLoginRequiredMessage();
+        return;
+    }
+    
     const item = cart.find(item => item.id === productId);
     if (item) {
         const newQuantity = item.quantity + change;
+        
+        setCartItemLoading(productId, true);
         
         if (newQuantity <= 0) {
             await removeFromCart(productId);
         } else {
             item.quantity = newQuantity;
-            await saveCart(true);
+            await saveCart();
         }
+        
+        setCartItemLoading(productId, false);
     }
 }
 
@@ -304,50 +335,96 @@ function getCartCount() {
     return cart.reduce((sum, item) => sum + item.quantity, 0);
 }
 
-function updateCartBadge() {
-    const cartCountEl = document.getElementById('cart-count');
-    if (cartCountEl) {
-        cartCountEl.textContent = getCartCount();
-        // Animate badge when count changes
-        cartCountEl.style.transform = 'scale(1.2)';
-        setTimeout(() => {
-            if (cartCountEl) cartCountEl.style.transform = '';
-        }, 200);
+// ============================================
+// SET CART ITEM LOADING STATE
+// ============================================
+
+function setCartItemLoading(productId, isLoadingState) {
+    const cartItem = document.querySelector(`.cart-item-${productId}`);
+    if (!cartItem) return;
+    
+    const qtyButtons = cartItem.querySelectorAll('.cart-qty-btn');
+    const removeBtn = cartItem.querySelector('.cart-remove-btn');
+    const qtySpan = cartItem.querySelector('.cart-qty-span');
+    
+    if (isLoadingState) {
+        qtyButtons.forEach(btn => {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.style.cursor = 'wait';
+        });
+        if (removeBtn) {
+            removeBtn.disabled = true;
+            removeBtn.style.opacity = '0.5';
+            removeBtn.style.cursor = 'wait';
+        }
+        if (qtySpan) {
+            qtySpan.innerHTML = '<span style="display: inline-block; width: 24px; text-align: center;">...</span>';
+        }
+    } else {
+        qtyButtons.forEach(btn => {
+            btn.disabled = false;
+            btn.style.opacity = '';
+            btn.style.cursor = '';
+        });
+        if (removeBtn) {
+            removeBtn.disabled = false;
+            removeBtn.style.opacity = '';
+            removeBtn.style.cursor = '';
+        }
+        if (qtySpan) {
+            const item = cart.find(item => item.id === productId);
+            qtySpan.textContent = item?.quantity || '';
+        }
     }
 }
 
-function updateCartUI() {
-    updateCartBadge();
+// ============================================
+// UPDATE CART UI
+// ============================================
+
+async function updateCartUI() {
+    console.log('updateCartUI() called');
     
-    const cartItemsEl = document.getElementById('cart-body');
-    const cartTotalEl = document.getElementById('cart-total');
+    const isLoggedIn = await isUserSignedIn();
+    console.log('Is logged in for UI?', isLoggedIn);
+    
+    // Update cart count badge
+    const cartCountEl = document.getElementById('cartCount');
+    if (cartCountEl) cartCountEl.textContent = getCartCount();
+    
+    // Update cart sidebar items
+    const cartItemsEl = document.getElementById('cartItems');
+    const cartTotalEl = document.getElementById('cartTotal');
     
     if (cartItemsEl && cartTotalEl) {
-        if (cart.length === 0) {
+        if (!isLoggedIn) {
+            console.log('Showing login required in cart');
             cartItemsEl.innerHTML = `
-                <div class="cart-empty" style="text-align: center; padding: 4rem 2rem;">
-                    <i class="fas fa-shopping-bag" style="font-size: 3rem; color: rgba(212,168,48,0.2); margin-bottom: 1rem; display: block;"></i>
-                    <p style="font-family: var(--serif); font-style: italic; color: rgba(248,244,237,0.3); font-size: 1.1rem;">Your bag awaits</p>
-                    <p style="font-size: 0.7rem; color: rgba(248,244,237,0.2); margin-top: 0.5rem;">Add something exquisite</p>
+                <div class="empty-cart" style="text-align: center; padding: 2rem;">
+                    <i class="fas fa-lock" style="font-size: 2.5rem; color: #d4a830; margin-bottom: 1rem; display: block;"></i>
+                    <p style="margin-bottom: 0.5rem;">Please sign in to view your bag</p>
+                    <button onclick="window.location.href='login.html'" style="margin-top: 1rem; padding: 0.5rem 1.5rem; background: #d4a830; border: none; border-radius: 30px; cursor: pointer; color: #0d1a1f; font-weight: 500;">Sign In</button>
                 </div>
             `;
+            cartTotalEl.textContent = `₦0.00`;
+            return;
+        }
+        
+        if (cart.length === 0) {
+            cartItemsEl.innerHTML = '<div class="empty-cart"><i class="fas fa-shopping-bag"></i><p>Your bag is empty</p></div>';
         } else {
             cartItemsEl.innerHTML = cart.map(item => `
-                <div style="display: flex; gap: 1rem; margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.04);" class="cart-item-${item.id}">
-                    <img src="${item.image}" style="width: 72px; height: 90px; object-fit: cover; border-radius: 12px; flex-shrink: 0;">
+                <div class="cart-item-${item.id}" style="display: flex; gap: 1rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #eee; position: relative;">
+                    <img src="${item.image}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 12px;">
                     <div style="flex: 1;">
-                        <div style="font-family: var(--serif); font-size: 1rem; font-weight: 300; color: var(--bone); margin-bottom: 0.25rem;">${escapeHtml(item.name)}</div>
-                        <div style="font-family: var(--display); font-size: 0.55rem; letter-spacing: 0.15em; color: var(--gold-2); margin-bottom: 0.75rem;">${item.category || 'Luxury Item'}</div>
-                        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <button onclick="window.updateQuantity(${item.id}, -1)" class="cart-qty-btn" style="width: 28px; height: 28px; border: 1px solid rgba(255,255,255,0.08); background: none; color: var(--bone); cursor: pointer; font-size: 1rem; border-radius: 8px; transition: all 0.2s;">−</button>
-                                <span style="font-family: var(--display); font-size: 0.7rem; color: var(--bone); min-width: 24px; text-align: center;">${item.quantity}</span>
-                                <button onclick="window.updateQuantity(${item.id}, 1)" class="cart-qty-btn" style="width: 28px; height: 28px; border: 1px solid rgba(255,255,255,0.08); background: none; color: var(--bone); cursor: pointer; font-size: 1rem; border-radius: 8px; transition: all 0.2s;">+</button>
-                            </div>
-                            <button onclick="window.removeFromCart(${item.id})" class="cart-remove-btn" style="margin-left: auto; background: none; border: none; color: rgba(248,244,237,0.25); cursor: pointer; font-size: 0.85rem; transition: color 0.3s; padding: 0.25rem;">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                            <span style="font-family: var(--display); font-size: 0.7rem; color: var(--gold-2); letter-spacing: 0.06em;">₦${(item.price * item.quantity).toFixed(2)}</span>
+                        <h4 style="margin-bottom: 0.25rem;">${escapeHtml(item.name)}</h4>
+                        <p style="color: var(--gold-pure); font-weight: 600;">₦${item.price.toFixed(2)}</p>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                            <button class="cart-qty-btn" onclick="window.updateQuantity(${item.id}, -1)" style="width: 28px; height: 28px; border: 1px solid #ddd; background: white; border-radius: 8px; cursor: pointer; transition: all 0.2s;">-</button>
+                            <span class="cart-qty-span" style="min-width: 24px; text-align: center;">${item.quantity}</span>
+                            <button class="cart-qty-btn" onclick="window.updateQuantity(${item.id}, 1)" style="width: 28px; height: 28px; border: 1px solid #ddd; background: white; border-radius: 8px; cursor: pointer; transition: all 0.2s;">+</button>
+                            <button class="cart-remove-btn" onclick="window.removeFromCart(${item.id})" style="margin-left: auto; background: none; border: none; color: #999; cursor: pointer; transition: color 0.2s;"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
                 </div>
@@ -363,93 +440,48 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-function showNotification(message, type = 'success') {
-    const notification = document.createElement('div');
-    notification.className = 'notification-toast';
-    
-    let icon = 'fa-check-circle';
-    if (type === 'error') icon = 'fa-exclamation-circle';
-    if (type === 'info') icon = 'fa-info-circle';
-    
-    notification.innerHTML = `<i class="fas ${icon}"></i><span>${message}</span>`;
-    
-    // Style based on type
-    if (type === 'error') {
-        notification.style.borderLeftColor = '#c44a2c';
-        notification.querySelector('i').style.color = '#c44a2c';
-    } else if (type === 'info') {
-        notification.style.borderLeftColor = '#f0c842';
-        notification.querySelector('i').style.color = '#f0c842';
-    }
-    
-    document.body.appendChild(notification);
-    setTimeout(() => notification.classList.add('show'), 10);
+function showToastMessage(message) {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed; bottom: 30px; right: 30px; background: #0d1a1f;
+        color: white; padding: 1rem 1.5rem; border-radius: 12px;
+        display: flex; align-items: center; gap: 12px; z-index: 10000;
+        transform: translateX(400px); transition: transform 0.3s ease;
+        border-left: 3px solid #d4a830; box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    `;
+    toast.innerHTML = `<i class="fas fa-check-circle" style="color: #d4a830;"></i><span>${message}</span>`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.style.transform = 'translateX(0)', 10);
     setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 300);
+        toast.style.transform = 'translateX(400px)';
+        setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
 
 function animateCartIcon() {
-    const icon = document.getElementById('cart-open-btn');
+    const icon = document.querySelector('.cart-btn');
     if (icon) {
-        icon.style.transform = 'scale(1.15)';
+        icon.style.transform = 'scale(1.1)';
         setTimeout(() => icon.style.transform = '', 200);
     }
 }
 
-// ============================================
-// MERGE GUEST CART WHEN USER LOGS IN
-// ============================================
-
-async function mergeGuestCartWithUser() {
-    const guestCart = [...cart];
-    if (guestCart.length === 0) return;
-    
-    showNotification('Syncing your cart...', 'info');
-    
-    try {
-        const currentUser = await getCurrentUserFromSupabase();
-        if (!currentUser) return;
-        
-        const { data: userCart } = await window.dollarchicSupabase
-            .from('carts')
-            .select('product_id, quantity')
-            .eq('user_id', currentUser.id);
-        
-        for (const guestItem of guestCart) {
-            const existingUserItem = userCart?.find(item => item.product_id === guestItem.id);
-            
-            if (existingUserItem) {
-                await window.dollarchicSupabase
-                    .from('carts')
-                    .update({ quantity: existingUserItem.quantity + guestItem.quantity })
-                    .eq('user_id', currentUser.id)
-                    .eq('product_id', guestItem.id);
-            } else {
-                await window.dollarchicSupabase
-                    .from('carts')
-                    .insert([{
-                        user_id: currentUser.id,
-                        product_id: guestItem.id,
-                        quantity: guestItem.quantity
-                    }]);
-            }
-        }
-        
-        await window.dollarchicSupabase
-            .from('carts')
-            .delete()
-            .eq('session_id', getSessionId());
-        
-        await loadCart();
-        
-        showNotification('Cart synced with your account', 'success');
-    } catch (error) {
-        console.error('Error merging cart:', error);
-        showNotification('Failed to sync cart', 'error');
+// Add styles
+const spinStyle = document.createElement('style');
+spinStyle.textContent = `
+    @keyframes spin {
+        to { transform: rotate(360deg); }
     }
-}
+    
+    .cart-qty-btn:active {
+        transform: scale(0.95);
+    }
+    
+    .cart-remove-btn:hover {
+        color: #e74c3c !important;
+    }
+`;
+document.head.appendChild(spinStyle);
 
 // ============================================
 // INITIALIZE
@@ -457,49 +489,43 @@ async function mergeGuestCartWithUser() {
 
 // Make functions global
 window.addToCart = addToCart;
-window.addToCartById = addToCartById;
 window.removeFromCart = removeFromCart;
 window.updateQuantity = updateQuantity;
-window.getCartCount = getCartCount;
-
-// Add loading animation CSS
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-    
-    .cart-qty-btn:hover {
-        border-color: var(--gold-2) !important;
-        color: var(--gold-3) !important;
-        background: rgba(212,168,48,0.1) !important;
-    }
-    
-    .cart-remove-btn:hover {
-        color: var(--gold-2) !important;
-    }
-    
-    .cart-loading-state .loading-spinner-small {
-        border: 2px solid rgba(210, 170, 50, 0.2);
-        border-top-color: var(--gold-pure);
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-    }
-`;
-document.head.appendChild(style);
 
 // Load cart on page load
 document.addEventListener('DOMContentLoaded', async () => {
-    await loadCart();
+    console.log('DOM loaded, initializing cart...');
+    // Small delay to ensure auth is ready
+    setTimeout(async () => {
+        await loadCart();
+    }, 500);
 });
 
-// Listen for auth state changes to merge cart
+// Listen for auth state changes
 if (typeof window.dollarchicAuth !== 'undefined' && window.dollarchicAuth.onAuthStateChange) {
     window.dollarchicAuth.onAuthStateChange(async (event, session) => {
+        console.log('Auth state changed:', event);
         if (event === 'SIGNED_IN') {
-            await mergeGuestCartWithUser();
-        } else if (event === 'SIGNED_OUT') {
             await loadCart();
+            showToastMessage('Welcome back! Your cart is ready.');
+        } else if (event === 'SIGNED_OUT') {
+            cart = [];
+            updateCartUI();
+            showToastMessage('You have been signed out.');
         }
     });
 }
+
+// Add this function to your cart.js (at the end, before the closing braces)
+
+// Clear cart completely
+async function clearCart() {
+    console.log('Clearing cart...');
+    cart = [];
+    await saveCart();
+    updateCartUI();
+    showToastMessage('Cart cleared');
+}
+
+// Make it global
+window.clearCart = clearCart;

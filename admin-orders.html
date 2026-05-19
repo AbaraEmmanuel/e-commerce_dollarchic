@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Order Management | Dollarchic's Store</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Josefin+Sans:wght@100;200;300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    
+    <style>
+        :root {
+            --void: #020406;
+            --deep: #080f14;
+            --gold-2: #d4a830;
+            --gold-3: #f0c842;
+            --bone: #f8f4ed;
+            --pending: #f39c12;
+            --processing: #3498db;
+            --completed: #2ecc71;
+            --cancelled: #e74c3c;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Josefin Sans', sans-serif;
+            background: var(--void);
+            color: var(--bone);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            color: rgba(248,244,237,0.5);
+            margin-bottom: 2rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: rgba(8,9,14,0.65);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(212,168,48,0.15);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(212,168,48,0.6);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--gold-3);
+        }
+        
+        .orders-table {
+            background: rgba(8,9,14,0.65);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(212,168,48,0.15);
+            border-radius: 24px;
+            overflow: hidden;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        th {
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(212,168,48,0.6);
+            background: rgba(0,0,0,0.2);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        
+        .status-pending { background: rgba(243,156,18,0.2); color: var(--pending); }
+        .status-processing { background: rgba(52,152,219,0.2); color: var(--processing); }
+        .status-completed { background: rgba(46,204,113,0.2); color: var(--completed); }
+        .status-cancelled { background: rgba(231,76,60,0.2); color: var(--cancelled); }
+        
+        select {
+            padding: 0.5rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(212,168,48,0.3);
+            color: var(--bone);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .update-btn {
+            padding: 0.5rem 1rem;
+            background: var(--gold-2);
+            border: none;
+            color: var(--void);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.3s ease;
+        }
+        
+        .update-btn:hover {
+            background: var(--gold-3);
+            transform: translateY(-2px);
+        }
+        
+        .view-details {
+            color: var(--gold-2);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        
+        .refresh-btn {
+            padding: 0.5rem 1rem;
+            background: var(--gold-2);
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--deep);
+            border-left: 2px solid var(--gold-2);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            transform: translateX(120%);
+            transition: transform 0.5s ease;
+            z-index: 1000;
+        }
+        
+        .toast.show { transform: translateX(0); }
+        
+        @media (max-width: 1024px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            th, td { font-size: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Order Management</h1>
+        <p class="subtitle">Manage customer orders and update statuses</p>
+        
+        <button class="refresh-btn" onclick="loadOrders()">
+            <i class="fas fa-sync-alt"></i> Refresh Orders
+        </button>
+        
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card"><h3>Pending Confirmation</h3><div class="stat-number" id="pendingCount">0</div></div>
+            <div class="stat-card"><h3>Processing</h3><div class="stat-number" id="processingCount">0</div></div>
+            <div class="stat-card"><h3>Completed</h3><div class="stat-number" id="completedCount">0</div></div>
+            <div class="stat-card"><h3>Total Orders</h3><div class="stat-number" id="totalCount">0</div></div>
+        </div>
+        
+        <div class="orders-table">
+            <table id="ordersTable">
+                <thead>
+                    <tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Date</th><th>Status</th><th>Action</th></tr>
+                </thead>
+                <tbody id="ordersList">
+                    <tr><td colspan="6" style="text-align: center;">Loading orders...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
+    
+    <script>
+        async function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        
+        async function loadOrders() {
+            const { data, error } = await window.dollarchicSupabase
+                .from('orders')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (error) {
+                console.error('Error loading orders:', error);
+                return;
+            }
+            
+            // Update stats
+            const pending = data.filter(o => o.status === 'pending_confirmation').length;
+            const processing = data.filter(o => o.status === 'processing').length;
+            const completed = data.filter(o => o.status === 'completed').length;
+            
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('processingCount').textContent = processing;
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('totalCount').textContent = data.length;
+            
+            // Render table
+            const tbody = document.getElementById('ordersList');
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No orders found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = data.map(order => `
+                <tr>
+                    <td><span class="view-details" onclick="viewOrderDetails('${order.order_id}')">${order.order_id}</span></td>
+                    <td>${order.customer_name}<br><small>${order.customer_email}</small></td>
+                    <td>₦${parseFloat(order.total).toFixed(2)}</td>
+                    <td>${new Date(order.created_at).toLocaleDateString()}</td>
+                    <td>
+                        <select id="status-${order.id}" class="status-select">
+                            <option value="pending_confirmation" ${order.status === 'pending_confirmation' ? 'selected' : ''}>Pending Confirmation</option>
+                            <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing Order</option>
+                            <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>Completed</option>
+                            <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                        </select>
+                    </td>
+                    <td><button class="update-btn" onclick="updateStatus('${order.id}', '${order.order_id}')">Update</button></td>
+                </tr>
+            `).join('');
+        }
+        
+        async function updateStatus(orderId, orderNumber) {
+            const select = document.getElementById(`status-${orderId}`);
+            const newStatus = select.value;
+            
+            const { error } = await window.dollarchicSupabase
+                .from('orders')
+                .update({ status: newStatus, updated_at: new Date() })
+                .eq('id', orderId);
+            
+            if (error) {
+                showToast('Error updating status');
+                console.error(error);
+            } else {
+                showToast(`Order ${orderNumber} status updated to ${newStatus}`);
+                loadOrders(); // Refresh the list
+            }
+        }
+        
+        function viewOrderDetails(orderId) {
+            alert(`Order details for ${orderId}\n\nFull details would be shown in a modal.`);
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            let retries = 0;
+            while (!window.dollarchicSupabase && retries < 20) {
+                await new Promise(r => setTimeout(r, 500));
+                retries++;
+            }
+            await loadOrders();
+        });
+    </script>
+</body>
+</html>
