@@ -992,7 +992,6 @@ footer { background: var(--void); border-top: 1px solid rgba(212,168,48,0.08); p
     <a href="#" class="active">Maison</a>
     <a href="scents.html">Scents</a>
     <a href="bags.html">Bags</a>
-    <a href="#">Atelier</a>
     <a href="search.html"><i class="fas fa-search"></i> Search</a>
   </div>
   <div class="sidebar-footer">
@@ -1017,7 +1016,7 @@ footer { background: var(--void); border-top: 1px solid rgba(212,168,48,0.08); p
       <li><a href="#" class="active">Maison</a></li>
       <li><a href="scents.html">Scents</a></li>
       <li><a href="bags.html">Bags</a></li>
-      <li><a href="#">Atelier</a></li>
+    
     </ul>
     <div class="nav-actions">
       <div class="auth-indicator" id="authIndicator"></div>
@@ -1429,11 +1428,8 @@ function updateAuthUI() {
       <a href="profile.html" class="profile-avatar-btn">
         <div class="avatar-circle"><i class="fas fa-user"></i></div>
         <span class="avatar-text">${firstName}</span>
-      </a>
-      <button class="logout-btn" id="logoutBtn">
-        <i class="fas fa-sign-out-alt"></i>
-        <span>Exit</span>
-      </button>`;
+      </a>`;
+
     authContainer.innerHTML = authHTML;
     if (sidebarAuth) sidebarAuth.innerHTML = authHTML;
     
